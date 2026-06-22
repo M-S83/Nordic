@@ -1,0 +1,81 @@
+// =============================================================================
+// clean-observation
+// Cleans a raw live observation into a tidy note, suggests tags and sentiment,
+// and (if a shirt number is present) attempts to attribute it to a player from
+// the event's team sheet.
+//
+// Principle: "Mirror, not verdict." The cleaned note must restate what the user
+// observed in clear language. It must NOT add judgement, praise or criticism.
+//
+// Body: { observation_id: string }
+// =============================================================================
+import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
+import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+
+  try {
+    const { observation_id } = await req.json();
+    if (!observation_id) return jsonResponse({ error: "Missing observation_id" }, 400);
+
+    const supa = userClient(req);
+    const { data: obs, error } = await supa
+      .from("observations").select("*").eq("id", observation_id).single();
+    if (error || !obs) return jsonResponse({ error: "Not found or not permitted" }, 403);
+    if (!obs.raw_note) return jsonResponse({ error: "No raw_note to clean" }, 400);
+
+    const raw = await callClaude({
+      system:
+        "You are a reflective assistant for football coaches and scouts. " +
+        "Principle: MIRROR, NOT VERDICT. Restate the observation in clear, neutral " +
+        "language. Never add praise, criticism or judgement that wasn't in the note. " +
+        'Return ONLY JSON: {"cleaned_note": string, "tags": string[], ' +
+        '"sentiment": "positive"|"concern"|"neutral", "phase_of_play": string|null}.',
+      prompt: obs.raw_note,
+    });
+
+    const parsed = safeParse(raw);
+
+    const admin = serviceClient();
+    // Try to attribute by shirt number via the event's team sheet.
+    let player_id = obs.player_id;
+    if (!player_id && obs.shirt_number != null) {
+      const { data: match } = await admin
+        .from("team_sheet_players")
+        .select("player_id, team_sheets!inner(event_id)")
+        .eq("team_sheets.event_id", obs.event_id)
+        .eq("shirt_number", obs.shirt_number)
+        .not("player_id", "is", null)
+        .limit(1).maybeSingle();
+      if (match?.player_id) player_id = match.player_id;
+    }
+
+    const { error: upErr } = await admin.from("observations").update({
+      cleaned_note: parsed.cleaned_note ?? obs.raw_note,
+      tags: parsed.tags ?? obs.tags,
+      sentiment: parsed.sentiment ?? obs.sentiment,
+      phase_of_play: parsed.phase_of_play ?? obs.phase_of_play,
+      player_id,
+    }).eq("id", observation_id);
+    if (upErr) return jsonResponse({ error: upErr.message }, 500);
+
+    return jsonResponse({ ok: true, observation_id, ...parsed, player_id });
+  } catch (e) {
+    return jsonResponse({ error: String(e) }, 500);
+  }
+});
+
+function safeParse(raw: string): {
+  cleaned_note?: string;
+  tags?: string[];
+  sentiment?: "positive" | "concern" | "neutral";
+  phase_of_play?: string | null;
+} {
+  try {
+    const m = raw.match(/\{[\s\S]*\}/);
+    return m ? JSON.parse(m[0]) : {};
+  } catch {
+    return {};
+  }
+}
