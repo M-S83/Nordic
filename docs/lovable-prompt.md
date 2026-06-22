@@ -1,0 +1,96 @@
+# Lovable build prompt — Nordic frontend
+
+Use this to build the **Nordic** frontend in [Lovable](https://lovable.dev)
+against the existing Supabase backend (schema, RLS, Auth, Storage and Edge
+Functions in `../supabase`).
+
+## Before you paste the prompt
+
+1. **Connect Lovable to your Supabase project first** (Lovable → Settings →
+   Supabase integration). This makes Lovable build against the real schema
+   instead of inventing its own.
+2. **Do not let Lovable recreate the schema.** The migrations in
+   `supabase/migrations/` are the source of truth. The prompt instructs it to
+   read/write only through existing tables, policies and buckets.
+3. **Keep field names aligned with the schema.** Point Lovable at
+   `types/database.ts` (or paste it), and have it run
+   `supabase gen types typescript` against the project so generated queries
+   match the real columns.
+4. **Build mode-by-mode** (Coach first). Lovable does better with one flow at a
+   time than the whole app in one shot.
+
+## The prompt
+
+> Build a mobile-first web app called **Nordic** — a football **coaching,
+> player reflection and scouting intelligence** tool. The Supabase backend
+> (Postgres schema, RLS, Auth, Storage, Edge Functions) already exists and is
+> connected — **do not create or modify tables, policies, or buckets; only
+> read/write through the existing ones.**
+>
+> **Product principle: "Mirror, not verdict."** The app helps users reflect,
+> organise and spot patterns — it never judges them. Keep all AI-facing copy
+> neutral and curious, never evaluative.
+>
+> **Auth:** Supabase Auth (email magic link). On signup, a `profiles` row is
+> auto-created with a `role`. After login, route the user by `profiles.role`:
+> `coach`, `player`, `scout`, `coach_developer`, `admin`. Let users pick their
+> role + optional club during onboarding (write to `profiles`).
+>
+> **Three primary modes (driven by role):**
+> - **Coach Mode** — manage clubs/teams/players; create `training_session` /
+>   `match` / `coach_observation` events; capture live observations; write a
+>   coach reflection; generate a coach report.
+> - **Player Mode** — create `player_reflection` events; record reflections
+>   about own performance; answer optional follow-up questions; view own player
+>   reports. A player only ever sees their own data.
+> - **Scout Mode** — create `player_scouting` / `team_scouting` events; upload
+>   opposition team sheets; capture observations tagged by shirt number;
+>   generate scout reports.
+>
+> **Core screens:**
+> 1. **Home / dashboard** — recent events, quick "Start live capture", recent
+>    insights.
+> 2. **Event list + create event** — fields: title, type, date, opposition,
+>    venue, focus area, team. Status `draft → live → completed`.
+> 3. **Live capture screen** (the centrepiece) — during a `live` event,
+>    rapid-fire observations: a big record button (voice), a text field, and
+>    quick tag chips. Each observation stores match minute, observation type,
+>    subject type (player/team/coach/unit), optional shirt number, tags,
+>    sentiment (positive/concern/neutral), phase of play. Voice notes upload to
+>    the `audio-recordings` bucket. Show observations as a live timeline.
+> 4. **Team sheet upload** — upload image/PDF to the `uploads` bucket or enter
+>    manually; show extracted players (shirt number → name) so observations
+>    auto-attribute by shirt number.
+> 5. **Post-event reflection** — record/transcribe a reflection, with structured
+>    sections: what went well, what didn't work, learning evidence, action
+>    points, suggested next focus. Then show **optional, always-skippable** AI
+>    follow-up questions and capture answers.
+> 6. **Reports** — view generated report (`content_markdown` rendered nicely +
+>    optional PDF download from `reports` bucket). Reports are private to
+>    creator/club-admin/granted users.
+> 7. **Insights** — long-term pattern cards (e.g. "scanning under pressure
+>    mentioned in last 6 sessions"), scoped to player/team/club.
+>
+> **Edge Functions to call (already deployed):** `transcribe-audio`,
+> `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
+> `generate-report`, `update-insights`. Invoke via
+> `supabase.functions.invoke(...)` and reflect their results in the UI (e.g.
+> show the cleaned note after `clean-observation`).
+>
+> **Storage buckets:** `audio-recordings`, `uploads`, `reports`. Upload files
+> under a path prefixed with the user's id (`<user_id>/...`) — RLS requires this.
+>
+> **Design:** clean, calm, sporty, mobile-first. Reflective and supportive tone,
+> not analytical/scoreboard-like. Fast one-handed live capture (big tap targets).
+> Light + dark mode.
+>
+> Build the auth flow, role-based routing, and the Coach Mode flow end-to-end
+> first (event → live capture → reflection → report), then Player and Scout modes.
+
+## Reference
+
+- Schema & enums: `supabase/migrations/0001_initial_schema.sql`
+- RLS rules: `supabase/migrations/0002_rls_policies.sql`
+- Buckets: `supabase/migrations/0003_storage_buckets.sql`
+- TypeScript object shapes: `types/database.ts`
+- Backend overview & per-mode notes: `supabase/README.md`
