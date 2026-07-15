@@ -173,11 +173,20 @@ Both write `content_json` + `content_markdown` (optional PDF to the `reports`
 bucket). Reports are visible only to the creator, club admins, or users listed
 in `report_access`.
 
-### Long-term insight tracking
-`update-insights` scans a user’s observations, counts recurring tags per player /
-theme, and writes `insights` (with `evidence_count` + `confidence_score`). This
-powers cross-event intelligence such as “scanning under pressure mentioned in the
-last 6 sessions”.
+### Long-term insight tracking (and how it feeds reflection)
+The notes tell the story; `update-insights` picks up the trend. It buckets each
+player/team theme **by week** and, when a theme recurs across several of the
+recent weeks (≥3 of the last 4), writes an `insight` carrying a `sentiment`
+(concern vs progress) and a forward-looking `reflective_prompt` — e.g.
+“*middle-third organisation* has come up in 3 of the last 4 weeks — how do you
+plan to tackle it?” (concern), or “*scanning* has shown up in 3 of the last 4
+weeks — what have you done to let them know they’ve progressed?” (progress).
+
+These prompts don’t just sit in a list: `generate-reflection-questions` surfaces
+the team’s recurring-insight prompts inside the next reflection (skippable), so
+the long-term trend the notes have been telling **influences the reflection**.
+Mirror, not verdict throughout — it reflects the pattern back and asks; it never
+judges.
 
 ## Security model (RLS)
 

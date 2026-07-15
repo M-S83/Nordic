@@ -108,8 +108,12 @@ Functions in `../supabase`).
 >    View
 >    `content_markdown` rendered nicely + optional PDF from the `reports` bucket.
 >    Reports are private to creator/club-admin/granted users.
-> 7. **Insights** — long-term pattern cards (e.g. "scanning under pressure
->    mentioned in last 6 sessions"), scoped to player/team/club.
+> 7. **Insights** — long-term pattern cards from `update-insights`, which buckets
+>    themes by week and flags anything recurring in ≥3 of the last 4 weeks with a
+>    `sentiment` (concern/progress) and a `reflective_prompt`. Show the prompt on
+>    the card (e.g. "come up 3 of the last 4 weeks — how will you tackle it?").
+>    These same prompts also appear inside the next reflection's follow-ups, so
+>    the trend influences reflection — surface them there too.
 > 8. **Player profile** — per player, show accumulated stats from the
 >    `player_stats` view (appearances, goals, assists, cards, clean sheets,
 >    minutes, trainings attended) and a running development log

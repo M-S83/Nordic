@@ -65,13 +65,37 @@ Deno.serve(async (req) => {
 
     const questions = safeParse(raw).slice(0, max_questions);
 
-    const admin = serviceClient();
     const rows = questions.map((q) => ({
       reflection_id,
       question_text: q.question_text,
       question_type: q.question_type ?? "text",
       options: q.options ?? [],
     }));
+
+    // Let long-term trends influence the reflection: surface reflective prompts
+    // from recurring insights on this event's team (up to 2), so a pattern the
+    // notes have been telling gets asked about here too.
+    const { data: ev } = await supa
+      .from("events").select("team_id").eq("id", ref.event_id).single();
+    if (ev?.team_id) {
+      const { data: trends } = await supa
+        .from("insights")
+        .select("reflective_prompt")
+        .eq("team_id", ev.team_id)
+        .not("reflective_prompt", "is", null)
+        .order("updated_at", { ascending: false })
+        .limit(2);
+      for (const t of trends ?? []) {
+        rows.push({
+          reflection_id,
+          question_text: t.reflective_prompt as string,
+          question_type: "text",
+          options: [],
+        });
+      }
+    }
+
+    const admin = serviceClient();
     const { data: inserted, error: insErr } = rows.length
       ? await admin.from("followup_questions").insert(rows).select()
       : { data: [], error: null };

@@ -529,13 +529,18 @@ create table public.insights (
   club_id          uuid references public.clubs (id) on delete set null,
   team_id          uuid references public.teams (id) on delete set null,
   player_id        uuid references public.players (id) on delete set null,
-  insight_type     insight_type not null,
-  title            text not null,
-  description      text,
-  evidence_count   int not null default 1,
-  confidence_score numeric(4,3),
-  created_at       timestamptz not null default now(),
-  updated_at       timestamptz not null default now()
+  insight_type      insight_type not null,
+  title             text not null,
+  description       text,
+  sentiment         sentiment,             -- concern vs progress, drives the prompt tone
+  -- A reflective, forward-looking nudge for a recurring theme, e.g.
+  -- "flagged 3 of the last 4 weeks — how will you tackle it?" (concern) or
+  -- "progressed across the period — what have you done to let them know?" (positive)
+  reflective_prompt text,
+  evidence_count    int not null default 1,
+  confidence_score  numeric(4,3),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
 );
 
 create index insights_user_id_idx on public.insights (user_id);

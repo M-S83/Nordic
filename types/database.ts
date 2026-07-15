@@ -348,6 +348,8 @@ export interface Insight {
   insight_type: InsightType;
   title: string;
   description: string | null;
+  sentiment: Sentiment | null; // concern vs progress
+  reflective_prompt: string | null; // forward-looking nudge for a recurring theme
   evidence_count: number;
   confidence_score: number | null;
   created_at: string;

@@ -246,6 +246,28 @@ values (
 on conflict (id) do nothing;
 
 -- =============================================================================
+-- Insights — trends the notes have surfaced, with reflective prompts
+-- =============================================================================
+
+insert into public.insights
+  (user_id, club_id, team_id, player_id, insight_type, title, description,
+   sentiment, reflective_prompt, evidence_count, confidence_score)
+values
+  (:'coach_id', :'club_id', :'team_id', :'player_oscar', 'player_pattern',
+   'Oscar: “scanning”',
+   'Noted in 3 of the last 4 weeks (5 notes in total).',
+   'positive',
+   'Oscar — “scanning” has shown up in 3 of the last 4 weeks. What have you done to let them know they''ve progressed?',
+   5, 0.750),
+  (:'coach_id', :'club_id', :'team_id', null, 'recurring_theme',
+   'Theme: “middle-third organisation”',
+   'Noted in 3 of the last 4 weeks (4 notes in total).',
+   'concern',
+   'The team — “middle-third organisation” has come up in 3 of the last 4 weeks. How do you plan to tackle it?',
+   4, 0.750)
+on conflict (id) do nothing;
+
+-- =============================================================================
 -- Reports — a per-match report and a monthly (period) report
 -- =============================================================================
 

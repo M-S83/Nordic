@@ -1,18 +1,37 @@
 // =============================================================================
 // update-insights
-// Recomputes long-term pattern intelligence for a user by scanning their
-// observations across events, and upserts rows into `insights`.
+// The notes tell the story; this picks up the trend. It scans a user's
+// observations, buckets each player/team theme BY WEEK, and when a theme recurs
+// across several of the recent weeks it writes an insight carrying a sentiment
+// (concern vs progress) and a reflective, forward-looking prompt, e.g.:
+//   "“losing the ball under press” has come up in 3 of the last 4 weeks —
+//    how do you plan to tackle it?"        (concern)
+//   "Oscar — “scanning” has shown up in 3 of the last 4 weeks — what have you
+//    done to let them know they've progressed?"   (progress)
 //
-// Examples it produces:
-//   "Oscar has been mentioned 8 times for finding space but not receiving."
-//   "The last 6 sessions mention scanning under pressure."
-//   "We've built through the number 6 in each of the last 6 matches."
+// These prompts are surfaced back inside the reflection flow (see
+// generate-reflection-questions), so the long-term trend influences reflection.
 //
-// Body: { user_id?: string, player_id?: string, team_id?: string }
-//   (defaults to the calling user)
+// Body: { user_id?: string }  (defaults to the calling user)
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { serviceClient, userClient } from "../_shared/clients.ts";
+
+const WEEK_MS = 7 * 86_400_000;
+const WINDOW_WEEKS = 4; // "3 of the last 4 weeks"
+const RECUR_THRESHOLD = 3;
+
+interface Bucket {
+  player_id: string | null;
+  name: string | null;
+  tag: string;
+  weeks: Set<number>;
+  count: number;
+  pos: number;
+  con: number;
+  team_id: string | null;
+  club_id: string | null;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -28,53 +47,84 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: "Can only recompute your own insights" }, 403);
     }
 
-    // Pull this user's observations (RLS-scoped).
+    // The notes, with the date + subject needed to spot a trend over time.
     const { data: observations, error } = await supa
       .from("observations")
-      .select("player_id, tags, event_id, events(team_id, club_id)")
+      .select("player_id, tags, sentiment, players(display_name), events(event_date, team_id, club_id)")
       .eq("user_id", userId);
     if (error) return jsonResponse({ error: error.message }, 500);
 
-    // --- Simple frequency-based pattern detection ----------------------------
-    // Count tag occurrences per player; surface anything mentioned >= 3 times.
-    const counts = new Map<string, { player_id: string | null; tag: string; n: number; team_id: string | null; club_id: string | null }>();
+    const buckets = new Map<string, Bucket>();
+    let maxWeek = -Infinity;
     for (const o of observations ?? []) {
       const ev = (o as any).events ?? {};
+      if (!ev.event_date) continue;
+      const week = Math.floor(Date.parse(ev.event_date) / WEEK_MS);
+      if (week > maxWeek) maxWeek = week;
       for (const tag of o.tags ?? []) {
         const key = `${o.player_id ?? "team"}::${tag}`;
-        const cur = counts.get(key) ?? {
-          player_id: o.player_id, tag, n: 0,
+        const b = buckets.get(key) ?? {
+          player_id: o.player_id ?? null,
+          name: (o as any).players?.display_name ?? null,
+          tag, weeks: new Set<number>(), count: 0, pos: 0, con: 0,
           team_id: ev.team_id ?? null, club_id: ev.club_id ?? null,
         };
-        cur.n += 1;
-        counts.set(key, cur);
+        b.weeks.add(week);
+        b.count++;
+        if (o.sentiment === "positive") b.pos++;
+        else if (o.sentiment === "concern") b.con++;
+        buckets.set(key, b);
       }
     }
+    if (maxWeek === -Infinity) return jsonResponse({ ok: true, insights: [], scanned: 0 });
+    const windowStart = maxWeek - (WINDOW_WEEKS - 1);
 
     const admin = serviceClient();
-    const upserted: unknown[] = [];
-    for (const { player_id, tag, n, team_id, club_id } of counts.values()) {
-      if (n < 3) continue;
-      const title = player_id
-        ? `Player repeatedly tagged "${tag}"`
-        : `Recurring theme: "${tag}"`;
-      const description = player_id
-        ? `This player has been mentioned ${n} times in relation to "${tag}".`
-        : `"${tag}" has appeared in ${n} observations.`;
+    const created: unknown[] = [];
+
+    for (const b of buckets.values()) {
+      const weeksInWindow =
+        [...b.weeks].filter((w) => w >= windowStart && w <= maxWeek).length;
+      const recurringWeeks = weeksInWindow >= RECUR_THRESHOLD;
+      // Fall back to plain frequency if there isn't enough spread across weeks.
+      if (!recurringWeeks && b.count < 3) continue;
+
+      const sentiment = b.con > b.pos ? "concern" : b.pos > b.con ? "positive" : "neutral";
+      const who = b.player_id ? (b.name ?? "This player") : "The team";
+
+      let prompt: string | null = null;
+      if (recurringWeeks) {
+        if (sentiment === "concern") {
+          prompt = `${who} — “${b.tag}” has come up in ${weeksInWindow} of the last ` +
+            `${WINDOW_WEEKS} weeks. How do you plan to tackle it?`;
+        } else if (sentiment === "positive") {
+          prompt = `${who} — “${b.tag}” has shown up in ${weeksInWindow} of the last ` +
+            `${WINDOW_WEEKS} weeks. What have you done to let them know they've progressed?`;
+        } else {
+          prompt = `“${b.tag}” has recurred in ${weeksInWindow} of the last ` +
+            `${WINDOW_WEEKS} weeks. Worth making it a focus?`;
+        }
+      }
+
+      const description = recurringWeeks
+        ? `Noted in ${weeksInWindow} of the last ${WINDOW_WEEKS} weeks (${b.count} notes in total).`
+        : `${who} noted ${b.count} times in relation to “${b.tag}”.`;
 
       const { data } = await admin.from("insights").insert({
         user_id: userId,
-        club_id, team_id, player_id,
-        insight_type: player_id ? "player_pattern" : "recurring_theme",
-        title,
+        club_id: b.club_id, team_id: b.team_id, player_id: b.player_id,
+        insight_type: b.player_id ? "player_pattern" : "recurring_theme",
+        title: b.player_id ? `${who}: “${b.tag}”` : `Theme: “${b.tag}”`,
         description,
-        evidence_count: n,
-        confidence_score: Math.min(1, n / 10),
+        sentiment,
+        reflective_prompt: prompt,
+        evidence_count: b.count,
+        confidence_score: Math.min(1, recurringWeeks ? weeksInWindow / WINDOW_WEEKS : b.count / 10),
       }).select().single();
-      if (data) upserted.push(data);
+      if (data) created.push(data);
     }
 
-    return jsonResponse({ ok: true, insights: upserted, scanned: observations?.length ?? 0 });
+    return jsonResponse({ ok: true, insights: created, scanned: observations?.length ?? 0 });
   } catch (e) {
     return jsonResponse({ error: String(e) }, 500);
   }
