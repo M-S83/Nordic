@@ -51,7 +51,10 @@ Functions in `../supabase`).
 > 1. **Home / dashboard** — recent events, quick "Start live capture", recent
 >    insights.
 > 2. **Event list + create event** — fields: title, type, date, opposition,
->    venue, focus area, team. Status `draft → live → completed`. For a match,
+>    venue, team, and its **intent**: a `focus_area` (short theme), a `purpose`
+>    (the aim of the session), and `hoping_to_see` (a list of observable things
+>    you hope to see — render as add-able bullets). Status `draft → live →
+>    completed`. For a match,
 >    also pick a **competition** (a `competitions` row — league or cup, with
 >    editable names, managed in team settings) and set **home / away / neutral**.
 > 2b. **Squad selection / attendance** — pick the matchday squad from the team's

@@ -243,7 +243,9 @@ create table public.events (
   event_date      date,
   opposition      text,                   -- the opponent for a match
   venue           text,
-  focus_area      text,
+  focus_area      text,                   -- short theme tag, e.g. "Building under pressure"
+  purpose         text,                   -- why you're running it — the aim of the session/match
+  hoping_to_see   jsonb not null default '[]'::jsonb, -- observable things you hope to see (list of strings)
   status          event_status not null default 'draft',
   started_at      timestamptz,
   ended_at        timestamptz,

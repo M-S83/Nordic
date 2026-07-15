@@ -138,7 +138,9 @@ export interface Event {
   event_date: string | null; // ISO date
   opposition: string | null;
   venue: string | null;
-  focus_area: string | null;
+  focus_area: string | null; // short theme tag
+  purpose: string | null; // the aim of the session/match
+  hoping_to_see: string[]; // observable things you hope to see
   status: EventStatus;
   started_at: string | null;
   ended_at: string | null;

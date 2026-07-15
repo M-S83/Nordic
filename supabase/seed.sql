@@ -68,14 +68,21 @@ on conflict (id) do nothing;
 
 -- Events ----------------------------------------------------------------------
 insert into public.events
-  (id, user_id, club_id, team_id, competition_id, event_type, title, event_date, opposition, venue, focus_area, status, started_at, ended_at)
+  (id, user_id, club_id, team_id, competition_id, event_type, title, event_date, opposition, venue,
+   focus_area, purpose, hoping_to_see, status, started_at, ended_at)
 values
   (:'training_event_id', :'coach_id', :'club_id', :'team_id', null, 'training_session',
    'Tuesday Session — Playing Out From The Back', '2026-06-16', null, 'Home Ground',
-   'Building under pressure', 'completed', '2026-06-16 18:00:00+00', '2026-06-16 19:30:00+00'),
+   'Building under pressure',
+   'Help the team keep the ball in the first phase when pressed high.',
+   '["Players scanning before they receive","Centre-backs splitting to create angles","Keeper used as a spare man","Calm decisions under pressure"]'::jsonb,
+   'completed', '2026-06-16 18:00:00+00', '2026-06-16 19:30:00+00'),
   (:'match_event_id', :'coach_id', :'club_id', :'team_id', :'league_comp_id', 'match',
    'JPL Division 1 vs Barnet Youth', '2026-06-18', 'Barnet Youth', 'Home Ground',
-   'Our build-up shape', 'completed', '2026-06-18 15:00:00+00', '2026-06-18 16:45:00+00')
+   'Our build-up shape',
+   'See whether the week''s build-up work holds up against a real press.',
+   '["Composure playing out from the back","Midfield finding space between lines","Full-backs offering width in build-up"]'::jsonb,
+   'completed', '2026-06-18 15:00:00+00', '2026-06-18 16:45:00+00')
 on conflict (id) do nothing;
 
 -- Pre-training note (planning thought before the session) ---------------------
@@ -160,13 +167,26 @@ values
   (:'match_event_id', :'player_maya',  0, 1, 0, 0, true,  90)
 on conflict (event_id, player_id) do nothing;
 
--- Live observations (match) ---------------------------------------------------
+-- Observations across the match (pre / live / post) ---------------------------
 insert into public.observations
-  (event_id, user_id, timestamp_seconds, match_minute, input_type, observation_type,
-   subject_type, player_id, shirt_number, raw_note, cleaned_note, tags, sentiment, phase_of_play)
+  (event_id, user_id, team_id, capture_phase, timestamp_seconds, match_minute, input_type,
+   observation_type, subject_type, player_id, shirt_number, raw_note, cleaned_note, tags, sentiment, phase_of_play)
 values
-  (:'match_event_id', :'coach_id', 600, 10, 'text_note', 'tactical_pattern',
+  -- before kick-off
+  (:'match_event_id', :'coach_id', :'team_id', 'pre_event', null, null, 'text_note', 'follow_up_later',
+   'team', null, null,
+   'watch how we handle their high press early on',
+   'Watch how we handle their high press in the opening spell.',
+   array['plan','press'], 'neutral', null),
+  -- during the match
+  (:'match_event_id', :'coach_id', :'team_id', 'live', 600, 10, 'text_note', 'tactical_pattern',
    'team', null, 6,
    'we keep building through maya at the 6',
    'The team consistently builds play through Maya at number 6.',
-   array['build_up','number_6'], 'neutral', 'build_up');
+   array['build_up','number_6'], 'neutral', 'build_up'),
+  -- right after full time
+  (:'match_event_id', :'coach_id', :'team_id', 'post_event', null, null, 'voice_note', 'team_observation',
+   'team', null, null,
+   'really pleased we stayed calm on the ball even when they pressed',
+   'Pleased with how calm we stayed on the ball under their press.',
+   array['composure','build_up'], 'positive', null);

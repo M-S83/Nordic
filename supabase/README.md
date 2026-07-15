@@ -55,11 +55,14 @@ supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
 
 `clubs → teams → players` is the org hierarchy, with `competitions` (leagues /
 cups) alongside. **Everything else hangs off an `event`** (training session,
-match, coach observation or player reflection). An event owns its `team_sheets`
-(+ `team_sheet_players`), `observations`, `event_attendance`, `reflections` and
-`reports`; match events also own `match_details` and `match_stats`. Reflections
-own `followup_questions`, which own `followup_answers`. `insights` aggregate
-patterns over time and can be scoped to a user, club, team or player.
+match, coach observation or player reflection). An event carries its intent up
+front — a `focus_area` (short theme), a `purpose` (the aim) and `hoping_to_see`
+(a JSONB list of observable things you hope to see) — and owns its `team_sheets`
+(+ `team_sheet_players`), `observations` (each phased `pre_event` / `live` /
+`post_event` / `ad_hoc`), `event_attendance`, `reflections` and `reports`; match
+events also own `match_details` and `match_stats`. Reflections own
+`followup_questions`, which own `followup_answers`. `insights` aggregate patterns
+over time and can be scoped to a user, club, team or player.
 
 ## How the backend supports each capability
 
