@@ -1,4 +1,6 @@
-# Nordic — Coaching & Player Reflection Backend
+# Reflective Lens — Coaching & Player Reflection Backend
+
+> **Reflective Lens** — *see your coaching clearly.*
 
 Supabase backend for a football **coaching and player reflection** app focused
 on analysing your **own team** and recording notes. User roles — **Coach**,

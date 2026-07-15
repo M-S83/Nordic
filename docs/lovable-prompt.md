@@ -1,6 +1,6 @@
-# Lovable build prompt — Nordic frontend
+# Lovable build prompt — Reflective Lens frontend
 
-Use this to build the **Nordic** frontend in [Lovable](https://lovable.dev)
+Use this to build the **Reflective Lens** frontend in [Lovable](https://lovable.dev)
 against the existing Supabase backend (schema, RLS, Auth, Storage and Edge
 Functions in `../supabase`).
 
@@ -21,7 +21,8 @@ Functions in `../supabase`).
 
 ## The prompt
 
-> Build a mobile-first web app called **Nordic** — a football **coaching and
+> Build a mobile-first web app called **Reflective Lens** (tagline: "see your
+> coaching clearly") — a football **coaching and
 > player reflection** tool for analysing your **own team** and recording notes.
 > The Supabase backend (Postgres schema, RLS, Auth, Storage, Edge Functions)
 > already exists and is connected — **do not create or modify tables, policies,
