@@ -76,8 +76,11 @@ Functions in `../supabase`).
 >    name) so observations auto-attribute to your players by shirt number.
 > 5. **Post-event reflection** — record/transcribe a reflection, with structured
 >    sections: what went well, what didn't work, learning evidence, action
->    points, suggested next focus. Then show **optional, always-skippable** AI
->    follow-up questions and capture answers.
+>    points, suggested next focus. Then, **only where the reflection is brief or
+>    broad**, show a light nudge (1–3 **optional, always-skippable** questions)
+>    inviting a bit more context — a concrete example, which player/moment, what
+>    a vague word meant. If the reflection is already detailed, show none. Capture
+>    answers against the questions.
 > 6. **Reports** — view generated report (`content_markdown` rendered nicely +
 >    optional PDF download from `reports` bucket). Reports are private to
 >    creator/club-admin/granted users.

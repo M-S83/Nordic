@@ -111,8 +111,11 @@ straight out). A match's `event.competition_id` links it to a `competitions` row
 ### Post-event reflection
 `reflections` hold the `raw_transcript`, a `summary`, and JSONB lists
 (`what_went_well`, `what_did_not_work`, `learning_evidence`, `action_points`,
-`suggested_next_focus`). `generate-reflection-questions` adds optional,
-always-skippable `followup_questions`; answers land in `followup_answers`.
+`suggested_next_focus`). `generate-reflection-questions` reads the reflection and,
+**only where it's brief or broad**, offers a light nudge to add a bit of context
+(a concrete example, which player/moment, what a vague word meant) — if the
+reflection is already detailed it asks nothing. Questions are optional and
+always-skippable (`followup_questions`); answers land in `followup_answers`.
 
 ### Report generation
 `generate-report` aggregates an event’s observations + reflection (+ squad

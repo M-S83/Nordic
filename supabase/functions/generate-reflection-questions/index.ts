@@ -1,10 +1,12 @@
 // =============================================================================
 // generate-reflection-questions
-// After a reflection is saved, generate a small set of OPTIONAL follow-up
-// questions that help the user reflect more deeply. Every question is skippable.
+// After a reflection is saved, gently nudge the coach to add a little context
+// ONLY where the reflection reads as brief or broad. If it's already detailed,
+// ask nothing. Every question is optional and skippable.
 //
-// Principle: "Mirror, not verdict." Questions are open and curious, never
-// leading or judgemental.
+// Principle: "Mirror, not verdict." Questions invite a bit more detail — a
+// concrete example, what something looked like, which player/moment — never
+// analysis, judgement, or advice on what they should have done.
 //
 // Body: { reflection_id: string, max_questions?: number }
 // =============================================================================
@@ -29,20 +31,35 @@ Deno.serve(async (req) => {
       .from("reflections").select("*").eq("id", reflection_id).single();
     if (error || !ref) return jsonResponse({ error: "Not found or not permitted" }, 403);
 
+    // Give the model the whole reflection so it can judge where detail is thin.
     const context = JSON.stringify({
+      raw_transcript: ref.raw_transcript,
       summary: ref.summary,
       what_went_well: ref.what_went_well,
       what_did_not_work: ref.what_did_not_work,
+      learning_evidence: ref.learning_evidence,
       action_points: ref.action_points,
+      suggested_next_focus: ref.suggested_next_focus,
     });
 
     const raw = await callClaude({
       system:
-        "You help coaches and players reflect. Principle: MIRROR, NOT VERDICT. " +
-        "Generate open, curious, non-judgemental follow-up questions based on the " +
-        `reflection. Return ONLY a JSON array (max ${max_questions}) of objects with ` +
-        'keys: question_text (string), question_type ("multiple_choice"|"voice"|' +
-        '"text"|"rating"), options (array of {value,label}; [] unless multiple_choice).',
+        "You help a coach add a little context to their own reflection. " +
+        "Principle: MIRROR, NOT VERDICT — never judge, coach, or suggest what " +
+        "they should have done. Your ONLY job is to invite a bit more detail " +
+        "where the reflection reads as brief or broad: a concrete example, what " +
+        "something looked like, which player or moment, or what a vague word " +
+        "(\"chaotic\", \"good\", \"better\") actually meant here.\n" +
+        "Rules:\n" +
+        "- If a point is already specific and detailed, do NOT ask about it.\n" +
+        "- If the whole reflection is already rich, return an empty array [].\n" +
+        `- Ask AT MOST ${max_questions} short, gentle, open questions, each tied ` +
+        "to one thin or broad spot.\n" +
+        "- Questions invite context, not analysis or self-criticism, and are " +
+        "always skippable.\n" +
+        'Return ONLY a JSON array of objects with keys: question_text (string), ' +
+        'question_type ("text"|"voice"|"multiple_choice"|"rating"), options ' +
+        "(array of {value,label}; [] unless multiple_choice).",
       prompt: context,
     });
 
