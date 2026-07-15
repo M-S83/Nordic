@@ -26,7 +26,7 @@ export type EventStatus = "draft" | "live" | "completed";
 
 export type AttendanceStatus = "present" | "absent" | "injured" | "unavailable";
 
-export type SquadSelection = "starter" | "substitute";
+export type SquadSelection = "starter" | "substitute" | "unused_substitute";
 
 export type MatchResult = "win" | "draw" | "loss";
 
@@ -151,7 +151,8 @@ export interface EventAttendance {
   event_id: string;
   player_id: string;
   status: AttendanceStatus;
-  selection: SquadSelection | null; // starter / substitute for matches
+  selection: SquadSelection | null; // starter / substitute / unused_substitute (matches)
+  position: string | null; // lineup position for this match, e.g. 'CM', 'LW'
   created_at: string;
 }
 
@@ -159,6 +160,7 @@ export interface MatchDetails {
   id: string;
   event_id: string;
   home_away: HomeAway | null;
+  formation: string | null; // e.g. '4-3-3'
   goals_for: number;
   goals_against: number;
   result: MatchResult; // generated: win / draw / loss

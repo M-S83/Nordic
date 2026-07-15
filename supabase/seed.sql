@@ -133,21 +133,21 @@ values
 
 -- Attendance & matchday selection ---------------------------------------------
 -- Training: just who turned up. Match: starters / subs picked from the squad.
-insert into public.event_attendance (event_id, player_id, status, selection)
+insert into public.event_attendance (event_id, player_id, status, selection, position)
 values
-  (:'training_event_id', :'player_oscar', 'present', null),
-  (:'training_event_id', :'player_maya',  'present', null),
-  (:'training_event_id', :'player_jay',   'injured', null),
-  (:'match_event_id',    :'player_oscar', 'present', 'starter'),
-  (:'match_event_id',    :'player_maya',  'present', 'starter'),
-  (:'match_event_id',    :'player_jay',   'present', 'substitute')
+  (:'training_event_id', :'player_oscar', 'present', null,         null),
+  (:'training_event_id', :'player_maya',  'present', null,         null),
+  (:'training_event_id', :'player_jay',   'injured', null,         null),
+  (:'match_event_id',    :'player_oscar', 'present', 'starter',    'CM'),
+  (:'match_event_id',    :'player_maya',  'present', 'starter',    'DM'),
+  (:'match_event_id',    :'player_jay',   'present', 'substitute', 'LW')
 on conflict (event_id, player_id) do nothing;
 
 -- Match record: scoreline, venue side, man of the match -----------------------
 insert into public.match_details
-  (event_id, home_away, goals_for, goals_against, man_of_the_match, notes)
+  (event_id, home_away, formation, goals_for, goals_against, man_of_the_match, notes)
 values
-  (:'match_event_id', 'home', 2, 0, :'player_oscar',
+  (:'match_event_id', 'home', '4-3-3', 2, 0, :'player_oscar',
    'Clean sheet held under late pressure; controlled build-up throughout.')
 on conflict (event_id) do nothing;
 

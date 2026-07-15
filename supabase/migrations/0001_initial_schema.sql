@@ -43,9 +43,13 @@ create type attendance_status as enum (
 );
 
 -- Matchday role, picked from the squad list (matches only).
+--   starter            = in the XI
+--   substitute         = named on the bench and came on
+--   unused_substitute  = named on the bench, did not come on
 create type squad_selection as enum (
   'starter',
-  'substitute'
+  'substitute',
+  'unused_substitute'
 );
 
 -- Match outcome from our team's perspective.
@@ -333,7 +337,8 @@ create table public.event_attendance (
   event_id    uuid not null references public.events (id) on delete cascade,
   player_id   uuid not null references public.players (id) on delete cascade,
   status      attendance_status not null default 'present',
-  selection   squad_selection,            -- starter / substitute (matches; null for training)
+  selection   squad_selection,            -- starter / substitute / unused_substitute (matches; null for training)
+  position    text,                       -- lineup position for this match, e.g. 'CM', 'LW'
   created_at  timestamptz not null default now(),
   unique (event_id, player_id)
 );
@@ -350,6 +355,7 @@ create table public.match_details (
   id                uuid primary key default gen_random_uuid(),
   event_id          uuid not null unique references public.events (id) on delete cascade,
   home_away         home_away,
+  formation         text,                 -- e.g. '4-3-3'
   goals_for         int not null default 0,
   goals_against     int not null default 0,
   result            match_result generated always as (

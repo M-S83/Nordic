@@ -104,12 +104,13 @@ note like “Number 8 scans before receiving” to the right player by shirt num
 ### Squad selection, attendance & match record
 For a match, the coach picks the matchday squad straight from the team's player
 list: `event_attendance` holds one row per player with a `status` (`present` /
-`absent` / `injured` / `unavailable`) and, for matches, a `selection`
-(`starter` / `substitute`). For training the same table just records who turned
-up (`selection` stays null).
-Matches also record results — `match_details` stores `home_away`, `goals_for` /
-`goals_against` (with a **generated** `result` of win/draw/loss), `man_of_the_match`
-and notes; `match_stats` holds per-player `goals`, `assists`, `yellow_cards`,
+`absent` / `injured` / `unavailable`), a `selection` (`starter` / `substitute` /
+`unused_substitute`) and a lineup `position` for that match (e.g. `CM`, `LW`).
+The match's shape is stored as `match_details.formation` (e.g. `4-3-3`). For
+training the same table just records who turned up (`selection`/`position` null).
+Matches also record results — `match_details` stores `home_away`, `formation`,
+`goals_for` / `goals_against` (with a **generated** `result` of win/draw/loss),
+`man_of_the_match` and notes; `match_stats` holds per-player `goals`, `assists`, `yellow_cards`,
 `red_cards`, `clean_sheet` and `minutes_played` (so "who scored / assisted" falls
 straight out). A match's `event.competition_id` links it to a `competitions` row
 — a league or cup with an **editable** name (e.g. rename "Cup 1" to "County Cup").

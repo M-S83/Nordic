@@ -55,14 +55,16 @@ Functions in `../supabase`).
 >    also pick a **competition** (a `competitions` row — league or cup, with
 >    editable names, managed in team settings) and set **home / away / neutral**.
 > 2b. **Squad selection / attendance** — pick the matchday squad from the team's
->    player list: mark each as **starter** or **substitute** (`event_attendance`
->    with `selection` = `starter` / `substitute`), and set availability via
->    `status` (`present` / `absent` / `injured` / `unavailable`). For training,
->    just tick who turned up (selection left null).
+>    player list: mark each **starter** / **substitute** / **unused_substitute**
+>    (`event_attendance.selection`), give starters a lineup **position** (e.g.
+>    `CM`, `LW`, in `event_attendance.position`), and pick a **formation** (e.g.
+>    `4-3-3`, stored in `match_details.formation`). Availability is `status`
+>    (`present` / `absent` / `injured` / `unavailable`). For training, just tick
+>    who turned up (selection/position left null).
 > 2c. **Match record** (match events) — enter the score (`goals_for` /
->    `goals_against`; `result` win/draw/loss is derived automatically), pick
->    **man of the match**, and per player log goals, assists, yellow/red cards,
->    clean sheet and minutes (`match_details` + `match_stats`).
+>    `goals_against`; `result` win/draw/loss is derived automatically), the
+>    formation, pick **man of the match**, and per player log goals, assists,
+>    yellow/red cards, clean sheet and minutes (`match_details` + `match_stats`).
 > 3. **Note capture** (the centrepiece) — an `observation` is a note that can be
 >    taken at any point, marked by `capture_phase`: `pre_event` (planning notes
 >    before training/a match), `live` (rapid-fire during it), `post_event` (a
