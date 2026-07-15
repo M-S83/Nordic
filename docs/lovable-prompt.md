@@ -79,7 +79,8 @@ Functions in `../supabase`).
 >    type, subject type (player/team/coach/unit), optional shirt number, tags,
 >    sentiment (positive/concern/neutral) and tactical phase of play. Voice notes
 >    upload to `audio-recordings`. Show live notes as a timeline; surface a
->    quick "capture a thought" entry point everywhere for ad-hoc notes.
+>    quick "capture a thought" entry point everywhere for ad-hoc notes — which,
+>    like any note, can be **voice or text** (voice → transcribed just the same).
 > 4. **Team sheet upload (optional)** — squad selection above is the main path;
 >    this is an optional alternative for bulk-adding players or a paper sheet.
 >    Upload an image/PDF to the `uploads` bucket (or enter manually); show

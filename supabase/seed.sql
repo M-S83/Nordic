@@ -142,9 +142,9 @@ insert into public.observations
   (event_id, user_id, team_id, capture_phase, input_type, observation_type,
    subject_type, player_id, raw_note, cleaned_note, tags, sentiment)
 values
-  (null, :'coach_id', :'team_id', 'ad_hoc', 'text_note', 'follow_up_later',
+  (null, :'coach_id', :'team_id', 'ad_hoc', 'voice_note', 'follow_up_later',
    'player', :'player_oscar',
-   'idea: give oscar a half-space receiving role next block',
+   'idea give oscar a half-space receiving role next block',
    'Idea: try Oscar in a half-space receiving role next training block.',
    array['idea','role','oscar'], 'neutral');
 
