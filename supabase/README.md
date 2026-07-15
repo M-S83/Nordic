@@ -93,15 +93,20 @@ Ad-hoc notes carry no event but can still be scoped to a `team_id` and/or
 by `transcribe-audio`; raw notes are tidied by `clean-observation` (mirror, not
 verdict). The deeper structured post-event write-up lives in `reflections`.
 
-### Team sheet upload
-A `team_sheets` row points at a file in the `uploads` bucket. `process-team-sheet`
-OCRs/extracts your squad roster into `team_sheet_players`, linking shirt numbers
-to canonical `players`. `clean-observation` then auto-attributes a note like
-“Number 8 scans before receiving” to the right player via the shirt number.
+### Team sheet upload (optional)
+Selecting from the squad list is the primary path. Snapping a team sheet is an
+optional alternative — handy for bulk-adding players or working from a paper
+sheet. A `team_sheets` row points at a file in the `uploads` bucket;
+`process-team-sheet` extracts the roster into `team_sheet_players`, linking shirt
+numbers to canonical `players`. Either way, `clean-observation` auto-attributes a
+note like “Number 8 scans before receiving” to the right player by shirt number.
 
-### Attendance & match record
-For any training or match, tick who was there: `event_attendance` holds one row
-per player with a `status` (`present` / `absent` / `injured` / `unavailable`).
+### Squad selection, attendance & match record
+For a match, the coach picks the matchday squad straight from the team's player
+list: `event_attendance` holds one row per player with a `status` (`present` /
+`absent` / `injured` / `unavailable`) and, for matches, a `selection`
+(`starter` / `substitute`). For training the same table just records who turned
+up (`selection` stays null).
 Matches also record results — `match_details` stores `home_away`, `goals_for` /
 `goals_against` (with a **generated** `result` of win/draw/loss), `man_of_the_match`
 and notes; `match_stats` holds per-player `goals`, `assists`, `yellow_cards`,

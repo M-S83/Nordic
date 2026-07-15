@@ -42,6 +42,12 @@ create type attendance_status as enum (
   'unavailable'
 );
 
+-- Matchday role, picked from the squad list (matches only).
+create type squad_selection as enum (
+  'starter',
+  'substitute'
+);
+
 -- Match outcome from our team's perspective.
 create type match_result as enum (
   'win',
@@ -327,6 +333,7 @@ create table public.event_attendance (
   event_id    uuid not null references public.events (id) on delete cascade,
   player_id   uuid not null references public.players (id) on delete cascade,
   status      attendance_status not null default 'present',
+  selection   squad_selection,            -- starter / substitute (matches; null for training)
   created_at  timestamptz not null default now(),
   unique (event_id, player_id)
 );

@@ -131,15 +131,16 @@ values
    'Idea: try Oscar in a half-space receiving role next training block.',
    array['idea','role','oscar'], 'neutral');
 
--- Attendance (who was there) --------------------------------------------------
-insert into public.event_attendance (event_id, player_id, status)
+-- Attendance & matchday selection ---------------------------------------------
+-- Training: just who turned up. Match: starters / subs picked from the squad.
+insert into public.event_attendance (event_id, player_id, status, selection)
 values
-  (:'training_event_id', :'player_oscar', 'present'),
-  (:'training_event_id', :'player_maya',  'present'),
-  (:'training_event_id', :'player_jay',   'injured'),
-  (:'match_event_id',    :'player_oscar', 'present'),
-  (:'match_event_id',    :'player_maya',  'present'),
-  (:'match_event_id',    :'player_jay',   'present')
+  (:'training_event_id', :'player_oscar', 'present', null),
+  (:'training_event_id', :'player_maya',  'present', null),
+  (:'training_event_id', :'player_jay',   'injured', null),
+  (:'match_event_id',    :'player_oscar', 'present', 'starter'),
+  (:'match_event_id',    :'player_maya',  'present', 'starter'),
+  (:'match_event_id',    :'player_jay',   'present', 'substitute')
 on conflict (event_id, player_id) do nothing;
 
 -- Match record: scoreline, venue side, man of the match -----------------------

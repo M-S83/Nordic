@@ -26,6 +26,8 @@ export type EventStatus = "draft" | "live" | "completed";
 
 export type AttendanceStatus = "present" | "absent" | "injured" | "unavailable";
 
+export type SquadSelection = "starter" | "substitute";
+
 export type MatchResult = "win" | "draw" | "loss";
 
 export type CompetitionKind = "league" | "cup";
@@ -149,6 +151,7 @@ export interface EventAttendance {
   event_id: string;
   player_id: string;
   status: AttendanceStatus;
+  selection: SquadSelection | null; // starter / substitute for matches
   created_at: string;
 }
 

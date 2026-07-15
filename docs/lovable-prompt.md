@@ -54,9 +54,11 @@ Functions in `../supabase`).
 >    venue, focus area, team. Status `draft → live → completed`. For a match,
 >    also pick a **competition** (a `competitions` row — league or cup, with
 >    editable names, managed in team settings) and set **home / away / neutral**.
-> 2b. **Attendance** — for any training or match, tick which players were there;
->    each becomes an `event_attendance` row with status `present` / `absent` /
->    `injured` / `unavailable`.
+> 2b. **Squad selection / attendance** — pick the matchday squad from the team's
+>    player list: mark each as **starter** or **substitute** (`event_attendance`
+>    with `selection` = `starter` / `substitute`), and set availability via
+>    `status` (`present` / `absent` / `injured` / `unavailable`). For training,
+>    just tick who turned up (selection left null).
 > 2c. **Match record** (match events) — enter the score (`goals_for` /
 >    `goals_against`; `result` win/draw/loss is derived automatically), pick
 >    **man of the match**, and per player log goals, assists, yellow/red cards,
@@ -71,9 +73,11 @@ Functions in `../supabase`).
 >    sentiment (positive/concern/neutral) and tactical phase of play. Voice notes
 >    upload to `audio-recordings`. Show live notes as a timeline; surface a
 >    quick "capture a thought" entry point everywhere for ad-hoc notes.
-> 4. **Team sheet upload** — upload your own squad sheet (image/PDF to the
->    `uploads` bucket) or enter manually; show extracted players (shirt number →
->    name) so observations auto-attribute to your players by shirt number.
+> 4. **Team sheet upload (optional)** — squad selection above is the main path;
+>    this is an optional alternative for bulk-adding players or a paper sheet.
+>    Upload an image/PDF to the `uploads` bucket (or enter manually); show
+>    extracted players (shirt number → name) so observations auto-attribute by
+>    shirt number.
 > 5. **Post-event reflection** — record a reflection **by text or by voice**
 >    (voice → `audio-recordings` bucket → `transcribe-audio` fills the
 >    transcript), with structured sections: what went well, what didn't work,
