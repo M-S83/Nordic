@@ -384,8 +384,9 @@ create table public.reflections (
   event_id             uuid not null references public.events (id) on delete cascade,
   user_id              uuid not null references auth.users (id) on delete cascade,
   reflection_type      reflection_type not null,
-  raw_transcript       text,
-  summary              text,
+  raw_transcript       text,               -- text typed, or transcript of a voice reflection
+  summary              text,               -- the coach's own reflection summary
+  enriched_summary     text,               -- summary re-woven with follow-up context (null until enriched)
   -- Structured lists kept as JSONB arrays of strings/objects.
   what_went_well       jsonb not null default '[]'::jsonb,
   what_did_not_work    jsonb not null default '[]'::jsonb,

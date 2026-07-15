@@ -74,13 +74,16 @@ Functions in `../supabase`).
 > 4. **Team sheet upload** — upload your own squad sheet (image/PDF to the
 >    `uploads` bucket) or enter manually; show extracted players (shirt number →
 >    name) so observations auto-attribute to your players by shirt number.
-> 5. **Post-event reflection** — record/transcribe a reflection, with structured
->    sections: what went well, what didn't work, learning evidence, action
->    points, suggested next focus. Then, **only where the reflection is brief or
->    broad**, show a light nudge (1–3 **optional, always-skippable** questions)
->    inviting a bit more context — a concrete example, which player/moment, what
->    a vague word meant. If the reflection is already detailed, show none. Capture
->    answers against the questions.
+> 5. **Post-event reflection** — record a reflection **by text or by voice**
+>    (voice → `audio-recordings` bucket → `transcribe-audio` fills the
+>    transcript), with structured sections: what went well, what didn't work,
+>    learning evidence, action points, suggested next focus. Then, **only where
+>    the reflection is brief or broad**, show a light nudge (1–3 **optional,
+>    always-skippable** questions) inviting a bit more context — a concrete
+>    example, which player/moment, what a vague word meant. If it's already
+>    detailed, show none. Answers can also be text or voice. When the coach adds
+>    any context, call `enrich-reflection` to fold it back into the reflection
+>    (shown as `enriched_summary`); skipping is always fine and changes nothing.
 > 6. **Reports** — view generated report (`content_markdown` rendered nicely +
 >    optional PDF download from `reports` bucket). Reports are private to
 >    creator/club-admin/granted users.
@@ -89,9 +92,10 @@ Functions in `../supabase`).
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
-> `generate-report`, `update-insights`. Invoke via
+> `enrich-reflection`, `generate-report`, `update-insights`. Invoke via
 > `supabase.functions.invoke(...)` and reflect their results in the UI (e.g.
-> show the cleaned note after `clean-observation`).
+> show the cleaned note after `clean-observation`, or the enriched summary after
+> `enrich-reflection`).
 >
 > **Storage buckets:** `audio-recordings`, `uploads`, `reports`. Upload files
 > under a path prefixed with the user's id (`<user_id>/...`) — RLS requires this.

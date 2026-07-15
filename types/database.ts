@@ -229,8 +229,9 @@ export interface Reflection {
   event_id: string;
   user_id: string;
   reflection_type: ReflectionType;
-  raw_transcript: string | null;
+  raw_transcript: string | null; // text typed, or transcript of a voice reflection
   summary: string | null;
+  enriched_summary: string | null; // summary re-woven with follow-up context
   what_went_well: string[];
   what_did_not_work: string[];
   learning_evidence: string[];

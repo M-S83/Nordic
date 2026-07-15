@@ -25,7 +25,8 @@ supabase/
     transcribe-audio/              Audio → transcript
     process-team-sheet/            Team sheet → extracted players
     clean-observation/             Raw note → cleaned note + tags + sentiment
-    generate-reflection-questions/ Reflection → optional follow-up questions
+    generate-reflection-questions/ Reflection → optional context-nudge questions
+    enrich-reflection/             Answers → reflection.enriched_summary
     generate-report/               Event → structured report (JSON + markdown)
     update-insights/               Observations → long-term pattern insights
 types/database.ts                  TypeScript interfaces for the main objects
@@ -116,6 +117,12 @@ straight out). A match's `event.competition_id` links it to a `competitions` row
 (a concrete example, which player/moment, what a vague word meant) — if the
 reflection is already detailed it asks nothing. Questions are optional and
 always-skippable (`followup_questions`); answers land in `followup_answers`.
+Any answers the coach does add are then folded back into the reflection by
+`enrich-reflection`, which writes an `enriched_summary` (the original `summary`
+is left untouched, and it no-ops if everything was skipped). Reflections and
+notes can be captured by **text or by voice** — voice recordings go to
+`audio-recordings` and `transcribe-audio` fills in the transcript / answer text.
+`generate-report` prefers the `enriched_summary` when one exists.
 
 ### Report generation
 `generate-report` aggregates an event’s observations + reflection (+ squad

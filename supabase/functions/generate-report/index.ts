@@ -46,7 +46,13 @@ Deno.serve(async (req) => {
         note: o.cleaned_note ?? o.raw_note, tags: o.tags, sentiment: o.sentiment,
         phase: o.phase_of_play,
       })),
-      reflection: reflections?.[0] ?? null,
+      reflection: reflections?.[0]
+        ? {
+          ...reflections[0],
+          // Use the context-enriched summary if the coach added any.
+          summary: reflections[0].enriched_summary ?? reflections[0].summary,
+        }
+        : null,
       roster: sheetPlayers ?? [],
     });
 
