@@ -68,6 +68,14 @@ values
   (:'player_jay',   :'team_id', 'Jay',   'Owens', 'Jay',    11, 'Left Wing', null,                            :'coach_id')
 on conflict (id) do nothing;
 
+-- Player development notes (a running coaching log) ---------------------------
+insert into public.player_development_notes (player_id, user_id, category, note)
+values
+  (:'player_oscar', :'coach_id', 'strength',         'Excellent scanning and awareness before receiving.'),
+  (:'player_oscar', :'coach_id', 'development_area', 'Can be caught in possession under a heavy press.'),
+  (:'player_oscar', :'coach_id', 'target',           'Take up more half-space receiving positions this block.')
+on conflict (id) do nothing;
+
 -- Events ----------------------------------------------------------------------
 insert into public.events
   (id, user_id, club_id, team_id, competition_id, event_type, title, event_date, opposition, venue,

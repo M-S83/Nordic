@@ -103,6 +103,11 @@ Functions in `../supabase`).
 >    creator/club-admin/granted users.
 > 7. **Insights** — long-term pattern cards (e.g. "scanning under pressure
 >    mentioned in last 6 sessions"), scoped to player/team/club.
+> 8. **Player profile** — per player, show accumulated stats from the
+>    `player_stats` view (appearances, goals, assists, cards, clean sheets,
+>    minutes, trainings attended) and a running development log
+>    (`player_development_notes`, categorised strength / development_area /
+>    target / general). Do not re-enter stats — they roll up from match data.
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,

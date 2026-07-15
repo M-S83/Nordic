@@ -102,6 +102,7 @@ alter table public.clubs               enable row level security;
 alter table public.profiles            enable row level security;
 alter table public.teams               enable row level security;
 alter table public.players             enable row level security;
+alter table public.player_development_notes enable row level security;
 alter table public.competitions        enable row level security;
 alter table public.events              enable row level security;
 alter table public.event_attendance    enable row level security;
@@ -235,6 +236,35 @@ create policy "players: update"
 create policy "players: delete"
   on public.players for delete
   using (created_by = auth.uid());
+
+-- =============================================================================
+-- PLAYER DEVELOPMENT NOTES
+-- Author writes; club staff of the player's team can also read.
+-- =============================================================================
+
+create policy "player_dev_notes: read own or club staff"
+  on public.player_development_notes for select
+  using (
+    user_id = auth.uid()
+    or exists (
+      select 1 from public.players p
+      join public.teams t on t.id = p.team_id
+      where p.id = player_development_notes.player_id and public.is_club_staff(t.club_id)
+    )
+  );
+
+create policy "player_dev_notes: insert own"
+  on public.player_development_notes for insert
+  with check (user_id = auth.uid());
+
+create policy "player_dev_notes: update own"
+  on public.player_development_notes for update
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+create policy "player_dev_notes: delete own"
+  on public.player_development_notes for delete
+  using (user_id = auth.uid());
 
 -- =============================================================================
 -- EVENTS

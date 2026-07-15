@@ -52,6 +52,14 @@ create type attendance_status as enum (
   'unavailable'
 );
 
+-- Category for a running player development note.
+create type dev_note_category as enum (
+  'strength',
+  'development_area',
+  'target',
+  'general'
+);
+
 -- Matchday role, picked from the squad list (matches only).
 --   starter            = in the XI
 --   substitute         = named on the bench and came on
@@ -224,6 +232,20 @@ create table public.players (
 );
 
 create index players_team_id_idx on public.players (team_id);
+
+-- Player development notes: a running coaching log per player over time -------
+-- (strengths, areas to work on, targets) — separate from match observations.
+create table public.player_development_notes (
+  id          uuid primary key default gen_random_uuid(),
+  player_id   uuid not null references public.players (id) on delete cascade,
+  user_id     uuid not null references auth.users (id) on delete cascade,
+  category    dev_note_category not null default 'general',
+  note        text not null,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index player_development_notes_player_id_idx on public.player_development_notes (player_id);
 
 -- Competitions: leagues / cups a team plays in, with editable names ----------
 create table public.competitions (
@@ -511,6 +533,53 @@ create index insights_player_id_idx on public.insights (player_id);
 create index insights_team_id_idx on public.insights (team_id);
 
 -- =============================================================================
+-- PLAYER STATS  (accumulated totals rolled up for a player's profile)
+-- A read-only view over data already stored — always current, never duplicated.
+-- security_invoker = true so the querying user's RLS on the base tables applies.
+-- =============================================================================
+
+create view public.player_stats
+  with (security_invoker = true) as
+select
+  p.id                                    as player_id,
+  p.team_id,
+  coalesce(app.appearances, 0)            as appearances,
+  coalesce(m.goals, 0)                    as goals,
+  coalesce(m.assists, 0)                  as assists,
+  coalesce(m.yellow_cards, 0)             as yellow_cards,
+  coalesce(m.red_cards, 0)                as red_cards,
+  coalesce(m.clean_sheets, 0)             as clean_sheets,
+  coalesce(m.minutes_played, 0)           as minutes_played,
+  coalesce(tr.trainings_attended, 0)      as trainings_attended
+from public.players p
+left join (
+  select ms.player_id,
+         sum(ms.goals)                          as goals,
+         sum(ms.assists)                        as assists,
+         sum(ms.yellow_cards)                   as yellow_cards,
+         sum(ms.red_cards)                      as red_cards,
+         count(*) filter (where ms.clean_sheet) as clean_sheets,
+         sum(coalesce(ms.minutes_played, 0))    as minutes_played
+  from public.match_stats ms
+  group by ms.player_id
+) m on m.player_id = p.id
+left join (
+  -- an appearance = started or came on as a sub (unused subs don't count)
+  select a.player_id, count(*) as appearances
+  from public.event_attendance a
+  join public.events e on e.id = a.event_id and e.event_type = 'match'
+  where a.selection in ('starter', 'substitute')
+  group by a.player_id
+) app on app.player_id = p.id
+left join (
+  select a.player_id, count(*) as trainings_attended
+  from public.event_attendance a
+  join public.events e on e.id = a.event_id and e.event_type = 'training_session'
+  where a.status = 'present'
+  group by a.player_id
+) tr on tr.player_id = p.id;
+
+-- =============================================================================
 -- updated_at trigger helper
 -- =============================================================================
 
@@ -538,6 +607,10 @@ create trigger reflections_set_updated_at
 
 create trigger insights_set_updated_at
   before update on public.insights
+  for each row execute function public.set_updated_at();
+
+create trigger player_development_notes_set_updated_at
+  before update on public.player_development_notes
   for each row execute function public.set_updated_at();
 
 -- =============================================================================

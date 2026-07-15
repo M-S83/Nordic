@@ -32,6 +32,12 @@ export type MatchResult = "win" | "draw" | "loss";
 
 export type TeamFormat = "3v3" | "5v5" | "6v6" | "7v7" | "9v9" | "11v11";
 
+export type DevNoteCategory =
+  | "strength"
+  | "development_area"
+  | "target"
+  | "general";
+
 export type CompetitionKind = "league" | "cup";
 
 export type HomeAway = "home" | "away" | "neutral";
@@ -128,6 +134,30 @@ export interface Competition {
   kind: CompetitionKind;
   created_by: string | null;
   created_at: string;
+}
+
+export interface PlayerDevelopmentNote {
+  id: string;
+  player_id: string;
+  user_id: string;
+  category: DevNoteCategory;
+  note: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Read-only rollup (the `player_stats` view) shown on a player's profile.
+export interface PlayerStats {
+  player_id: string;
+  team_id: string | null;
+  appearances: number;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  clean_sheets: number;
+  minutes_played: number;
+  trainings_attended: number;
 }
 
 export interface Event {

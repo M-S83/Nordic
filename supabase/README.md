@@ -119,6 +119,16 @@ Matches also record results — `match_details` stores `home_away`, `formation`,
 straight out). A match's `event.competition_id` links it to a `competitions` row
 — a league or cup with an **editable** name (e.g. rename "Cup 1" to "County Cup").
 
+### Player profile — stats & development notes
+A player's profile pulls together the data already captured about them. The
+`player_stats` view rolls up career totals per player — appearances, goals,
+assists, yellow/red cards, clean sheets, minutes, and trainings attended — from
+`match_stats` and `event_attendance` (it's a `security_invoker` view, so the
+querying user's RLS applies; nothing is duplicated). Alongside it,
+`player_development_notes` is a running coaching log per player — categorised
+`strength` / `development_area` / `target` / `general` — kept separate from
+in-session observations. The author writes them; club staff can read them.
+
 ### Closing the intent loop
 `review-intent` takes the event's `hoping_to_see` list and checks each item
 against the notes actually captured, writing `reflections.hoped_to_see_review`
