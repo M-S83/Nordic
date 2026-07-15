@@ -265,10 +265,18 @@ create policy "team_sheet_players: access via team sheet"
   );
 
 -- observations ----------------------------------------------------------------
-create policy "observations: access via event"
+-- Owner always has access (covers ad-hoc notes with no event); event-linked
+-- notes are additionally visible to anyone who can access the event.
+create policy "observations: access own or via event"
   on public.observations for all
-  using (public.can_access_event(event_id))
-  with check (public.can_access_event(event_id));
+  using (
+    user_id = auth.uid()
+    or (event_id is not null and public.can_access_event(event_id))
+  )
+  with check (
+    user_id = auth.uid()
+    or (event_id is not null and public.can_access_event(event_id))
+  );
 
 -- =============================================================================
 -- REFLECTIONS

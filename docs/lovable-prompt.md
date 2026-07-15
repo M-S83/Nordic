@@ -52,12 +52,16 @@ Functions in `../supabase`).
 >    insights.
 > 2. **Event list + create event** — fields: title, type, date, opposition,
 >    venue, focus area, team. Status `draft → live → completed`.
-> 3. **Live capture screen** (the centrepiece) — during a `live` event,
->    rapid-fire observations: a big record button (voice), a text field, and
->    quick tag chips. Each observation stores match minute, observation type,
->    subject type (player/team/coach/unit), optional shirt number, tags,
->    sentiment (positive/concern/neutral), phase of play. Voice notes upload to
->    the `audio-recordings` bucket. Show observations as a live timeline.
+> 3. **Note capture** (the centrepiece) — an `observation` is a note that can be
+>    taken at any point, marked by `capture_phase`: `pre_event` (planning notes
+>    before training/a match), `live` (rapid-fire during it), `post_event` (a
+>    quick thought right after), or `ad_hoc` (a thought any time, with no event —
+>    optionally scoped to a team/player). Capture as a big record button (voice),
+>    a text field, or quick tag chips. Each note stores match minute, observation
+>    type, subject type (player/team/coach/unit), optional shirt number, tags,
+>    sentiment (positive/concern/neutral) and tactical phase of play. Voice notes
+>    upload to `audio-recordings`. Show live notes as a timeline; surface a
+>    quick "capture a thought" entry point everywhere for ad-hoc notes.
 > 4. **Team sheet upload** — upload your own squad sheet (image/PDF to the
 >    `uploads` bucket) or enter manually; show extracted players (shirt number →
 >    name) so observations auto-attribute to your players by shirt number.

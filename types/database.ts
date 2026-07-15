@@ -46,6 +46,10 @@ export type SubjectType = "player" | "team" | "coach" | "unit" | "unknown";
 
 export type Sentiment = "positive" | "concern" | "neutral";
 
+// When a note was captured, relative to its event. 'ad_hoc' = a thought at any
+// time, which may not belong to an event at all.
+export type CapturePhase = "pre_event" | "live" | "post_event" | "ad_hoc";
+
 export type ReflectionType = "coach" | "player" | "coach_developer";
 
 export type QuestionType = "multiple_choice" | "voice" | "text" | "rating";
@@ -147,8 +151,10 @@ export interface TeamSheetPlayer {
 
 export interface Observation {
   id: string;
-  event_id: string;
+  event_id: string | null; // null for ad-hoc notes
   user_id: string;
+  team_id: string | null; // for scoping ad-hoc notes
+  capture_phase: CapturePhase;
   timestamp_seconds: number | null;
   match_minute: number | null;
   input_type: ObservationInputType;

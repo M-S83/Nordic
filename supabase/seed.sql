@@ -69,27 +69,58 @@ values
    'Our build-up shape', 'completed', '2026-06-18 15:00:00+00', '2026-06-18 16:45:00+00')
 on conflict (id) do nothing;
 
--- Live observations (training session) ----------------------------------------
+-- Pre-training note (planning thought before the session) ---------------------
 insert into public.observations
-  (event_id, user_id, timestamp_seconds, match_minute, input_type, observation_type,
-   subject_type, player_id, shirt_number, raw_note, cleaned_note, tags, sentiment, phase_of_play)
+  (event_id, user_id, team_id, capture_phase, input_type, observation_type,
+   subject_type, raw_note, cleaned_note, tags, sentiment)
 values
-  (:'training_event_id', :'coach_id', 320, 5, 'text_note', 'technical_action',
+  (:'training_event_id', :'coach_id', :'team_id', 'pre_event', 'text_note', 'follow_up_later',
+   'team', 'want to see if they can build out under a press today',
+   'Focus: can the team build out under pressure today?',
+   array['plan','build_up'], 'neutral');
+
+-- Live observations (during the training session) -----------------------------
+insert into public.observations
+  (event_id, user_id, team_id, capture_phase, timestamp_seconds, match_minute, input_type,
+   observation_type, subject_type, player_id, shirt_number, raw_note, cleaned_note, tags, sentiment, phase_of_play)
+values
+  (:'training_event_id', :'coach_id', :'team_id', 'live', 320, 5, 'text_note', 'technical_action',
    'player', :'player_oscar', 8,
    'oscar scans before receiving good',
    'Oscar scans before receiving.',
    array['scanning','receiving','awareness'], 'positive', 'build_up'),
 
-  (:'training_event_id', :'coach_id', 1100, 18, 'voice_note', 'concern_risk',
+  (:'training_event_id', :'coach_id', :'team_id', 'live', 1100, 18, 'voice_note', 'concern_risk',
    'team', null, null,
    'session got a bit chaotic in the middle third',
    'The session became chaotic in the middle third.',
    array['organisation','chaos'], 'concern', 'middle_third'),
 
-  (:'training_event_id', :'coach_id', 1850, 31, 'tag_only', 'moment_of_quality',
+  (:'training_event_id', :'coach_id', :'team_id', 'live', 1850, 31, 'tag_only', 'moment_of_quality',
    'player', :'player_jay', 11,
    null, null,
    array['1v1','beat_defender'], 'positive', 'attacking_third');
+
+-- Post-training quick note (a thought right after) ----------------------------
+insert into public.observations
+  (event_id, user_id, team_id, capture_phase, input_type, observation_type,
+   subject_type, raw_note, cleaned_note, tags, sentiment)
+values
+  (:'training_event_id', :'coach_id', :'team_id', 'post_event', 'voice_note', 'team_observation',
+   'team', 'constraints were too loose in the middle block, tighten next week',
+   'The constraints in the middle block were too loose; tighten them next week.',
+   array['constraints','organisation'], 'concern');
+
+-- Ad-hoc note (a thought at any time, not tied to any event) -------------------
+insert into public.observations
+  (event_id, user_id, team_id, capture_phase, input_type, observation_type,
+   subject_type, player_id, raw_note, cleaned_note, tags, sentiment)
+values
+  (null, :'coach_id', :'team_id', 'ad_hoc', 'text_note', 'follow_up_later',
+   'player', :'player_oscar',
+   'idea: give oscar a half-space receiving role next block',
+   'Idea: try Oscar in a half-space receiving role next training block.',
+   array['idea','role','oscar'], 'neutral');
 
 -- Live observations (match) ---------------------------------------------------
 insert into public.observations

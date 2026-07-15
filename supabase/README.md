@@ -79,12 +79,17 @@ events, record `coach_developer` reflections, and their insights are typed
 `coach_development`. As club staff they can read their club’s events, teams and
 players (RLS helper `is_club_staff`); anything they author stays theirs.
 
-### Live capture
-`observations` store `timestamp_seconds` + `match_minute`, an `input_type`
-(`voice_note` / `text_note` / `tag_only`), a rich `observation_type`, `tags[]`,
-`sentiment` and `phase_of_play`. Voice notes are uploaded to the
-`audio-recordings` bucket and transcribed by `transcribe-audio`; raw notes are
-tidied by `clean-observation` (mirror, not verdict).
+### Capturing notes (any time)
+`observations` are atomic notes captured across the whole timeline. A
+`capture_phase` marks when: `pre_event` (planning thoughts), `live` (during a
+session/match), `post_event` (a quick thought right after), or `ad_hoc` (a
+thought at any time, with `event_id` null). Each note stores `timestamp_seconds`
++ `match_minute`, an `input_type` (`voice_note` / `text_note` / `tag_only`), a
+rich `observation_type`, `tags[]`, `sentiment` and the tactical `phase_of_play`.
+Ad-hoc notes carry no event but can still be scoped to a `team_id` and/or
+`player_id`. Voice notes go to the `audio-recordings` bucket and are transcribed
+by `transcribe-audio`; raw notes are tidied by `clean-observation` (mirror, not
+verdict). The deeper structured post-event write-up lives in `reflections`.
 
 ### Team sheet upload
 A `team_sheets` row points at a file in the `uploads` bucket. `process-team-sheet`

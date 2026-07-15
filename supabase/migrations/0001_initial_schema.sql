@@ -83,6 +83,15 @@ create type sentiment as enum (
   'neutral'
 );
 
+-- When a note was captured, relative to the event it belongs to.
+-- 'ad_hoc' notes are thoughts at any time and may not belong to an event.
+create type capture_phase as enum (
+  'pre_event',
+  'live',
+  'post_event',
+  'ad_hoc'
+);
+
 create type reflection_type as enum (
   'coach',
   'player',
@@ -229,13 +238,19 @@ create index team_sheet_players_sheet_id_idx on public.team_sheet_players (team_
 create index team_sheet_players_player_id_idx on public.team_sheet_players (player_id);
 
 -- =============================================================================
--- LIVE OBSERVATIONS
+-- OBSERVATIONS / NOTES
+-- Atomic notes captured before, during or after an event — or ad-hoc thoughts
+-- at any time. Ad-hoc notes have no event (event_id is null) and can still be
+-- scoped to a team and/or player. The deeper structured write-up after an event
+-- lives separately in `reflections`.
 -- =============================================================================
 
 create table public.observations (
   id                uuid primary key default gen_random_uuid(),
-  event_id          uuid not null references public.events (id) on delete cascade,
+  event_id          uuid references public.events (id) on delete cascade, -- null for ad-hoc notes
   user_id           uuid not null references auth.users (id) on delete cascade,
+  team_id           uuid references public.teams (id) on delete set null, -- for ad-hoc scoping
+  capture_phase     capture_phase not null default 'live',
   timestamp_seconds int,                   -- offset within the recording/session
   match_minute      int,
   input_type        observation_input_type not null default 'text_note',
@@ -247,7 +262,7 @@ create table public.observations (
   cleaned_note      text,                  -- AI-cleaned (mirror, not verdict)
   tags              text[] not null default '{}',
   sentiment         sentiment not null default 'neutral',
-  phase_of_play     text,
+  phase_of_play     text,                  -- tactical phase (build_up, etc.), distinct from capture_phase
   confidence_score  numeric(4,3),
   audio_path        text,                  -- path within `audio-recordings` bucket
   created_at        timestamptz not null default now()
@@ -255,6 +270,7 @@ create table public.observations (
 
 create index observations_event_id_idx on public.observations (event_id);
 create index observations_user_id_idx on public.observations (user_id);
+create index observations_team_id_idx on public.observations (team_id);
 create index observations_player_id_idx on public.observations (player_id);
 create index observations_tags_idx on public.observations using gin (tags);
 
