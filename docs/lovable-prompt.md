@@ -133,11 +133,52 @@ Functions in `../supabase`).
 >
 > **Design:** clean, calm, sporty, mobile-first. Reflective and supportive tone,
 > not analytical/scoreboard-like. Fast one-handed live capture (big tap targets).
-> Light + dark mode.
+> Light + dark mode. Follow the **Design language** below exactly.
 >
 > Build the auth flow, role-based routing, and the Coach Mode flow end-to-end
 > first (event → live capture → reflection → report), then Player and
 > Coach-developer modes.
+
+## Design language
+
+The look to build toward (taken from the workflow mockups — the client likes it).
+It's a calm, Scandinavian "pitch" aesthetic: reflective, not scoreboard.
+
+**Palette** — a green-biased neutral ground with one muted pitch-green accent.
+Design both themes; the viewer's toggle stamps `data-theme` on the root, which
+must win over `prefers-color-scheme`.
+
+| Token | Light | Dark |
+|---|---|---|
+| `--bg` (page) | `#EDF1EF` | `#0C120F` |
+| `--surface` (cards) | `#FFFFFF` | `#141C18` |
+| `--surface-2` (insets) | `#F5F8F6` | `#101712` |
+| `--ink` (text) | `#14201B` | `#E7EEEA` |
+| `--muted` | `#56675E` | `#9AABA1` |
+| `--line` (borders) | `#DBE3DE` | `#24302A` |
+| `--accent` (pitch green) | `#2F6F5B` | `#55A587` |
+| `--accent-soft` (chips) | `#E1EDE7` | `#17241E` |
+
+Semantic colours are separate from the accent: **positive** `#38875F`/`#5DB88C`,
+**concern** `#B5842A`/`#D6A748`, **neutral** `#5C7385`/`#8AA0B0`. Use ▲/▼ or ✓/~/✗
+marks alongside colour, never colour alone.
+
+**Type** — three roles:
+- **Display / headings:** a serif (Georgia stack) — carries the reflective voice.
+- **Body / UI:** system sans (`system-ui`).
+- **Data & micro-labels:** `ui-monospace` — for table/field identifiers, minutes,
+  scores, stats, and uppercase eyebrow labels (`letter-spacing: ~.1em`).
+
+**Components & feel:**
+- Rounded cards (`~12–14px`) on the surface colour with a soft shadow and a hairline border.
+- **Pill chips** for statuses/tags (`starter`, `live`, `4-3-3`, sentiment) — mono, small, `--accent-soft` fill.
+- Uppercase mono eyebrow labels above groups (e.g. `HOPING TO SEE`, `PER PLAYER`).
+- Big primary buttons in solid `--accent`; ghost buttons are bordered/transparent.
+- Generous spacing, `gap`-based layout, `tabular-nums` wherever digits align.
+- Mobile-first, one-handed: large tap targets, a persistent "capture a thought" affordance.
+- Respect `prefers-reduced-motion`; keep motion subtle (small hover lifts at most).
+
+The published mockups are the reference for spacing, hierarchy and tone — match them.
 
 ## Reference
 
