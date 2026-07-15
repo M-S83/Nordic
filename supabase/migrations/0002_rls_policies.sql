@@ -6,7 +6,7 @@
 --   * Users can view and edit their own records.
 --   * Club admins can view their club's records.
 --   * Coaches / coach developers can view records for their club's teams.
---   * Scouts can view scouting events they created.
+--   * Users can view events they created (plus their club's, as staff).
 --   * Players can view their own reflections.
 --   * Reports are visible to the creator, club admins, or explicitly granted users.
 -- =============================================================================

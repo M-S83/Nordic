@@ -3,7 +3,7 @@
 -- Example seed data for local development.
 --
 --   1 club, 1 team, 3 players,
---   1 scouting event, 1 training session,
+--   1 match, 1 training session,
 --   a few live observations.
 --
 -- A demo auth user is created so foreign keys resolve. In a real Supabase
@@ -19,7 +19,7 @@
 \set player_oscar        '44444444-4444-4444-4444-444444444401'
 \set player_maya         '44444444-4444-4444-4444-444444444402'
 \set player_jay          '44444444-4444-4444-4444-444444444403'
-\set scout_event_id      '55555555-5555-5555-5555-555555555501'
+\set match_event_id      '55555555-5555-5555-5555-555555555501'
 \set training_event_id   '55555555-5555-5555-5555-555555555502'
 
 -- Demo auth user (bypasses normal signup). -----------------------------------
@@ -64,9 +64,9 @@ values
   (:'training_event_id', :'coach_id', :'club_id', :'team_id', 'training_session',
    'Tuesday Session — Playing Out From The Back', '2026-06-16', null, 'Home Ground',
    'Building under pressure', 'completed', '2026-06-16 18:00:00+00', '2026-06-16 19:30:00+00'),
-  (:'scout_event_id', :'coach_id', :'club_id', null, 'team_scouting',
-   'Scouting: Dumbarton FC', '2026-06-18', 'Dumbarton FC', 'Away',
-   'Build-up shape', 'completed', '2026-06-18 15:00:00+00', '2026-06-18 16:45:00+00')
+  (:'match_event_id', :'coach_id', :'club_id', :'team_id', 'match',
+   'League Match vs Barnet Youth', '2026-06-18', 'Barnet Youth', 'Home',
+   'Our build-up shape', 'completed', '2026-06-18 15:00:00+00', '2026-06-18 16:45:00+00')
 on conflict (id) do nothing;
 
 -- Live observations (training session) ----------------------------------------
@@ -91,13 +91,13 @@ values
    null, null,
    array['1v1','beat_defender'], 'positive', 'attacking_third');
 
--- Live observations (scouting event) ------------------------------------------
+-- Live observations (match) ---------------------------------------------------
 insert into public.observations
   (event_id, user_id, timestamp_seconds, match_minute, input_type, observation_type,
    subject_type, player_id, shirt_number, raw_note, cleaned_note, tags, sentiment, phase_of_play)
 values
-  (:'scout_event_id', :'coach_id', 600, 10, 'text_note', 'tactical_pattern',
+  (:'match_event_id', :'coach_id', 600, 10, 'text_note', 'tactical_pattern',
    'team', null, 6,
-   'they build everything through the 6',
-   'Opposition builds play through their number 6.',
+   'we keep building through maya at the 6',
+   'The team consistently builds play through Maya at number 6.',
    array['build_up','number_6'], 'neutral', 'build_up');

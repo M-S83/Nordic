@@ -27,7 +27,7 @@ Deno.serve(async (req) => {
 
     const raw = await callClaude({
       system:
-        "You are a reflective assistant for football coaches and scouts. " +
+        "You are a reflective assistant for football coaches and players. " +
         "Principle: MIRROR, NOT VERDICT. Restate the observation in clear, neutral " +
         "language. Never add praise, criticism or judgement that wasn't in the note. " +
         'Return ONLY JSON: {"cleaned_note": string, "tags": string[], ' +

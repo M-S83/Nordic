@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const raw = await callClaude({
       system:
-        "You help coaches/players/scouts reflect. Principle: MIRROR, NOT VERDICT. " +
+        "You help coaches and players reflect. Principle: MIRROR, NOT VERDICT. " +
         "Generate open, curious, non-judgemental follow-up questions based on the " +
         `reflection. Return ONLY a JSON array (max ${max_questions}) of objects with ` +
         'keys: question_text (string), question_type ("multiple_choice"|"voice"|' +

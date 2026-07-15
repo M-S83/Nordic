@@ -3,7 +3,7 @@
 -- Storage buckets + access policies.
 --
 -- Buckets (all private):
---   audio-recordings : live observations, reflections, scouting voice notes
+--   audio-recordings : live observations, reflections, follow-up answers
 --   uploads          : team sheets (images / PDFs) and supporting files
 --   reports          : generated PDFs and exported reports
 --

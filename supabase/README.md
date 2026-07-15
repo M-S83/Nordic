@@ -1,8 +1,9 @@
-# Nordic — Coaching, Reflection & Scouting Backend
+# Nordic — Coaching & Player Reflection Backend
 
-Supabase backend for a football **coaching, player reflection and scouting
-intelligence** app. Three user modes — **Coach**, **Player**, **Scout** (plus
-`coach_developer` and `admin`) — share one event-centric data model.
+Supabase backend for a football **coaching and player reflection** app focused
+on analysing your **own team** and recording notes. User roles — **Coach**,
+**Player**, **Coach developer** (plus `admin`) — share one event-centric data
+model.
 
 > **Product principle: “Mirror, not verdict.”**
 > The AI helps users reflect, organise and surface patterns. It never judges.
@@ -52,7 +53,7 @@ supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
 ## Data model at a glance
 
 `clubs → teams → players` is the org hierarchy. **Everything else hangs off an
-`event`** (training session, match, scouting, observation or reflection). An
+`event`** (training session, match, coach observation or player reflection). An
 event owns its `team_sheets` (+ `team_sheet_players`), `observations`,
 `reflections` and `reports`. Reflections own `followup_questions`, which own
 `followup_answers`. `insights` aggregate patterns over time and can be scoped to
@@ -72,11 +73,11 @@ own performance, answers optional follow-up questions, and gets a `player_report
 RLS keeps a player’s reflections private to them (`user_id = auth.uid()`) — they
 only see what they author.
 
-### Scout Mode
-A scout creates `player_scouting` / `team_scouting` events, uploads opposition
-`team_sheets`, captures `observations` against shirt numbers, and generates
-`player_scout_report` / `team_scout_report`. Scouting events are private to the
-creator (RLS: `events.user_id = auth.uid()`), so scouts only see events they made.
+### Coach-developer Mode
+A coach developer supports and observes coaches. They create `coach_observation`
+events, record `coach_developer` reflections, and their insights are typed
+`coach_development`. As club staff they can read their club’s events, teams and
+players (RLS helper `is_club_staff`); anything they author stays theirs.
 
 ### Live capture
 `observations` store `timestamp_seconds` + `match_minute`, an `input_type`
@@ -87,8 +88,8 @@ tidied by `clean-observation` (mirror, not verdict).
 
 ### Team sheet upload
 A `team_sheets` row points at a file in the `uploads` bucket. `process-team-sheet`
-OCRs/extracts the roster into `team_sheet_players`, linking shirt numbers to
-canonical `players`. `clean-observation` then auto-attributes a note like
+OCRs/extracts your squad roster into `team_sheet_players`, linking shirt numbers
+to canonical `players`. `clean-observation` then auto-attributes a note like
 “Number 8 scans before receiving” to the right player via the shirt number.
 
 ### Post-event reflection
@@ -98,8 +99,8 @@ canonical `players`. `clean-observation` then auto-attributes a note like
 always-skippable `followup_questions`; answers land in `followup_answers`.
 
 ### Report generation
-`generate-report` aggregates an event’s observations + reflection (+ roster for
-scouting) into a `reports` row with `content_json` and `content_markdown`; an
+`generate-report` aggregates an event’s observations + reflection (+ squad
+roster) into a `reports` row with `content_json` and `content_markdown`; an
 optional PDF can be rendered to the `reports` bucket. Reports are visible only to
 the creator, club admins, or users explicitly listed in `report_access`.
 
@@ -118,7 +119,7 @@ All tables have RLS enabled. SECURITY DEFINER helpers avoid recursive lookups:
 - Users read/write their **own** records.
 - **Club admins** read their club’s records; **coaches / coach developers** read
   their club’s teams, players and events.
-- **Scouts** see only scouting events they created.
+- **Users** see events they created; **club staff** additionally see their club's events.
 - **Players** see only their own reflections.
 - **Reports** are restricted to creator, club admins, or `report_access` grants.
 - **Storage** objects are namespaced under `<auth.uid()>/…`; policies allow each

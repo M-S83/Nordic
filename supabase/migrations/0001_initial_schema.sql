@@ -1,6 +1,6 @@
 -- =============================================================================
 -- 0001_initial_schema.sql
--- Football Coaching / Player Reflection / Scouting Intelligence app
+-- Football Coaching & Player Reflection app (own-team analysis)
 -- Core schema: enums + tables.
 --
 -- Product principle: "Mirror, not verdict."
@@ -17,7 +17,6 @@ create extension if not exists "pgcrypto"; -- gen_random_uuid()
 create type user_role as enum (
   'coach',
   'player',
-  'scout',
   'coach_developer',
   'admin'
 );
@@ -25,8 +24,6 @@ create type user_role as enum (
 create type event_type as enum (
   'training_session',
   'match',
-  'player_scouting',
-  'team_scouting',
   'coach_observation',
   'player_reflection'
 );
@@ -89,7 +86,6 @@ create type sentiment as enum (
 create type reflection_type as enum (
   'coach',
   'player',
-  'scout',
   'coach_developer'
 );
 
@@ -103,15 +99,13 @@ create type question_type as enum (
 create type report_type as enum (
   'coach_reflection',
   'player_report',
-  'team_scout_report',
-  'player_scout_report',
+  'team_report',
   'coach_observation'
 );
 
 create type insight_type as enum (
   'player_pattern',
   'team_pattern',
-  'opposition_pattern',
   'coach_development',
   'recurring_theme'
 );
@@ -129,7 +123,7 @@ create table public.clubs (
 );
 
 -- Profiles: 1:1 with Supabase auth users -------------------------------------
--- A user can be a coach, player, scout, coach_developer or admin and belongs
+-- A user can be a coach, player, coach_developer or admin and belongs
 -- optionally to a single club.
 create table public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
@@ -155,7 +149,8 @@ create table public.teams (
 
 create index teams_club_id_idx on public.teams (club_id);
 
--- Players: belong to a team (nullable so scouting-created players are allowed)
+-- Players: belong to a team (nullable so a player extracted from a team sheet
+-- can exist briefly before being linked to a team)
 create table public.players (
   id            uuid primary key default gen_random_uuid(),
   team_id       uuid references public.teams (id) on delete set null,

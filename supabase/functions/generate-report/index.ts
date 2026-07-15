@@ -1,6 +1,6 @@
 // =============================================================================
 // generate-report
-// Aggregates an event's observations + reflection (+ team sheet for scouting)
+// Aggregates an event's observations + reflection (+ team sheet roster)
 // into a structured report (JSON + markdown) and stores it in `reports`.
 //
 // Principle: "Mirror, not verdict." The report organises and surfaces patterns;
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 
     const raw = await callClaude({
       system:
-        "You produce structured football reflection/scouting reports. " +
+        "You produce structured football coaching reflection reports. " +
         "Principle: MIRROR, NOT VERDICT — organise observations into themes and " +
         "patterns; do not grade or judge. Return ONLY JSON with keys: " +
         '"headline" (string), "sections" (array of {heading, points: string[]}), ' +

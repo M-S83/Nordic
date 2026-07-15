@@ -13,15 +13,12 @@
 export type UserRole =
   | "coach"
   | "player"
-  | "scout"
   | "coach_developer"
   | "admin";
 
 export type EventType =
   | "training_session"
   | "match"
-  | "player_scouting"
-  | "team_scouting"
   | "coach_observation"
   | "player_reflection";
 
@@ -49,21 +46,19 @@ export type SubjectType = "player" | "team" | "coach" | "unit" | "unknown";
 
 export type Sentiment = "positive" | "concern" | "neutral";
 
-export type ReflectionType = "coach" | "player" | "scout" | "coach_developer";
+export type ReflectionType = "coach" | "player" | "coach_developer";
 
 export type QuestionType = "multiple_choice" | "voice" | "text" | "rating";
 
 export type ReportType =
   | "coach_reflection"
   | "player_report"
-  | "team_scout_report"
-  | "player_scout_report"
+  | "team_report"
   | "coach_observation";
 
 export type InsightType =
   | "player_pattern"
   | "team_pattern"
-  | "opposition_pattern"
   | "coach_development"
   | "recurring_theme";
 

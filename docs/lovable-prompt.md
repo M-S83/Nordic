@@ -21,11 +21,11 @@ Functions in `../supabase`).
 
 ## The prompt
 
-> Build a mobile-first web app called **Nordic** — a football **coaching,
-> player reflection and scouting intelligence** tool. The Supabase backend
-> (Postgres schema, RLS, Auth, Storage, Edge Functions) already exists and is
-> connected — **do not create or modify tables, policies, or buckets; only
-> read/write through the existing ones.**
+> Build a mobile-first web app called **Nordic** — a football **coaching and
+> player reflection** tool for analysing your **own team** and recording notes.
+> The Supabase backend (Postgres schema, RLS, Auth, Storage, Edge Functions)
+> already exists and is connected — **do not create or modify tables, policies,
+> or buckets; only read/write through the existing ones.**
 >
 > **Product principle: "Mirror, not verdict."** The app helps users reflect,
 > organise and spot patterns — it never judges them. Keep all AI-facing copy
@@ -33,19 +33,19 @@ Functions in `../supabase`).
 >
 > **Auth:** Supabase Auth (email magic link). On signup, a `profiles` row is
 > auto-created with a `role`. After login, route the user by `profiles.role`:
-> `coach`, `player`, `scout`, `coach_developer`, `admin`. Let users pick their
-> role + optional club during onboarding (write to `profiles`).
+> `coach`, `player`, `coach_developer`, `admin`. Let users pick their role +
+> optional club during onboarding (write to `profiles`).
 >
-> **Three primary modes (driven by role):**
+> **Roles / modes (driven by role):**
 > - **Coach Mode** — manage clubs/teams/players; create `training_session` /
->   `match` / `coach_observation` events; capture live observations; write a
->   coach reflection; generate a coach report.
+>   `match` / `coach_observation` events; capture live observations on their own
+>   squad; write a coach reflection; generate a coach report.
 > - **Player Mode** — create `player_reflection` events; record reflections
 >   about own performance; answer optional follow-up questions; view own player
 >   reports. A player only ever sees their own data.
-> - **Scout Mode** — create `player_scouting` / `team_scouting` events; upload
->   opposition team sheets; capture observations tagged by shirt number;
->   generate scout reports.
+> - **Coach-developer Mode** — create `coach_observation` events to observe and
+>   support coaches; record `coach_developer` reflections; their insights track
+>   coach development over time.
 >
 > **Core screens:**
 > 1. **Home / dashboard** — recent events, quick "Start live capture", recent
@@ -58,9 +58,9 @@ Functions in `../supabase`).
 >    subject type (player/team/coach/unit), optional shirt number, tags,
 >    sentiment (positive/concern/neutral), phase of play. Voice notes upload to
 >    the `audio-recordings` bucket. Show observations as a live timeline.
-> 4. **Team sheet upload** — upload image/PDF to the `uploads` bucket or enter
->    manually; show extracted players (shirt number → name) so observations
->    auto-attribute by shirt number.
+> 4. **Team sheet upload** — upload your own squad sheet (image/PDF to the
+>    `uploads` bucket) or enter manually; show extracted players (shirt number →
+>    name) so observations auto-attribute to your players by shirt number.
 > 5. **Post-event reflection** — record/transcribe a reflection, with structured
 >    sections: what went well, what didn't work, learning evidence, action
 >    points, suggested next focus. Then show **optional, always-skippable** AI
@@ -85,7 +85,8 @@ Functions in `../supabase`).
 > Light + dark mode.
 >
 > Build the auth flow, role-based routing, and the Coach Mode flow end-to-end
-> first (event → live capture → reflection → report), then Player and Scout modes.
+> first (event → live capture → reflection → report), then Player and
+> Coach-developer modes.
 
 ## Reference
 

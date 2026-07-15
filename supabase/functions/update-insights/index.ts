@@ -6,7 +6,7 @@
 // Examples it produces:
 //   "Oscar has been mentioned 8 times for finding space but not receiving."
 //   "The last 6 sessions mention scanning under pressure."
-//   "This opposition repeatedly builds through the number 6."
+//   "We've built through the number 6 in each of the last 6 matches."
 //
 // Body: { user_id?: string, player_id?: string, team_id?: string }
 //   (defaults to the calling user)

@@ -1,6 +1,6 @@
 // =============================================================================
 // transcribe-audio
-// Transcribes an audio recording (live observation, reflection, scouting note)
+// Transcribes an audio recording (live observation, reflection, follow-up answer)
 // and writes the transcript back to the originating row.
 //
 // Body: {
