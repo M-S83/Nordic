@@ -48,8 +48,8 @@ update public.profiles
  where id = :'coach_id';
 
 -- Team ------------------------------------------------------------------------
-insert into public.teams (id, club_id, name, age_group, created_by)
-values (:'team_id', :'club_id', 'U15 JPL', 'U15', :'coach_id')
+insert into public.teams (id, club_id, name, age_group, format, created_by)
+values (:'team_id', :'club_id', 'U15 JPL', 'U15', '11v11', :'coach_id')
 on conflict (id) do nothing;
 
 -- Competitions (editable names) -----------------------------------------------

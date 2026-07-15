@@ -54,8 +54,8 @@ supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
 
 ## Data model at a glance
 
-`clubs → teams → players` is the org hierarchy, with `competitions` (leagues /
-cups) alongside. **Everything else hangs off an `event`** (training session,
+`clubs → teams → players` is the org hierarchy (each team sets its playing
+`format` — `3v3` … `11v11`), with `competitions` (leagues / cups) alongside. **Everything else hangs off an `event`** (training session,
 match, coach observation or player reflection). An event carries its intent up
 front — a `focus_area` (short theme), a `purpose` (the aim) and `hoping_to_see`
 (a JSONB list of observable things you hope to see) — and owns its `team_sheets`

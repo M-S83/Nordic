@@ -34,6 +34,16 @@ create type event_status as enum (
   'completed'
 );
 
+-- The format a team plays (scales with age group).
+create type team_format as enum (
+  '3v3',
+  '5v5',
+  '6v6',
+  '7v7',
+  '9v9',
+  '11v11'
+);
+
 -- Whether a player was there for a given training/match.
 create type attendance_status as enum (
   'present',
@@ -191,6 +201,7 @@ create table public.teams (
   club_id     uuid not null references public.clubs (id) on delete cascade,
   name        text not null,
   age_group   text,
+  format      team_format not null,       -- 3v3 / 5v5 / 6v6 / 7v7 / 9v9 / 11v11
   created_by  uuid references auth.users (id) on delete set null,
   created_at  timestamptz not null default now()
 );

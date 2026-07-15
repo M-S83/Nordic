@@ -30,6 +30,8 @@ export type SquadSelection = "starter" | "substitute" | "unused_substitute";
 
 export type MatchResult = "win" | "draw" | "loss";
 
+export type TeamFormat = "3v3" | "5v5" | "6v6" | "7v7" | "9v9" | "11v11";
+
 export type CompetitionKind = "league" | "cup";
 
 export type HomeAway = "home" | "away" | "neutral";
@@ -100,6 +102,7 @@ export interface Team {
   club_id: string;
   name: string;
   age_group: string | null;
+  format: TeamFormat; // 3v3 … 11v11
   created_by: string | null;
   created_at: string;
 }

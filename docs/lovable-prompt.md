@@ -37,9 +37,10 @@ Functions in `../supabase`).
 > optional club during onboarding (write to `profiles`).
 >
 > **Roles / modes (driven by role):**
-> - **Coach Mode** — manage clubs/teams/players; create `training_session` /
->   `match` / `coach_observation` events; capture live observations on their own
->   squad; write a coach reflection; generate a coach report.
+> - **Coach Mode** — manage clubs/teams/players (each team requires a playing
+>   **format**: `3v3` / `5v5` / `6v6` / `7v7` / `9v9` / `11v11`, on `teams.format`);
+>   create `training_session` / `match` / `coach_observation` events; capture live
+>   observations on their own squad; write a coach reflection; generate a report.
 > - **Player Mode** — create `player_reflection` events; record reflections
 >   about own performance; answer optional follow-up questions; view own player
 >   reports. A player only ever sees their own data.
