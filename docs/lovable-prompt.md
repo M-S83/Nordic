@@ -98,9 +98,16 @@ Functions in `../supabase`).
 >    `hoping_to_see` item with a ✓ showed_up / ~ partly / ✗ not_observed status
 >    and its evidence note (`reflections.hoped_to_see_review`). Each not-observed
 >    item also appears as a skippable "why wasn't this seen?" follow-up question.
-> 6. **Reports** — view generated report (`content_markdown` rendered nicely +
->    optional PDF download from `reports` bucket). Reports are private to
->    creator/club-admin/granted users.
+> 6. **Reports** — generated at several cadences: per-event `training_report` /
+>    `match_report` (via `generate-report`, `event_id` set), and period
+>    `weekly_report` / `monthly_report` / `season_report` (via
+>    `generate-period-report` with `team_id` + `period_start`/`period_end`; a
+>    weekly report combines that week's training and match). Period reports read
+>    every note across the range, split by context, and compare training vs match
+>    (what's transferring, what isn't) — surfaced in a "Training ↔ match" section.
+>    View
+>    `content_markdown` rendered nicely + optional PDF from the `reports` bucket.
+>    Reports are private to creator/club-admin/granted users.
 > 7. **Insights** — long-term pattern cards (e.g. "scanning under pressure
 >    mentioned in last 6 sessions"), scoped to player/team/club.
 > 8. **Player profile** — per player, show accumulated stats from the

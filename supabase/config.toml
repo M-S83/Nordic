@@ -38,5 +38,8 @@ verify_jwt = true
 [functions.generate-report]
 verify_jwt = true
 
+[functions.generate-period-report]
+verify_jwt = true
+
 [functions.update-insights]
 verify_jwt = true

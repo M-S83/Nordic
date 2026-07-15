@@ -244,3 +244,26 @@ values (
   'We changed the drill before I got to the back-line work, so I never looked at it.'
 )
 on conflict (id) do nothing;
+
+-- =============================================================================
+-- Reports — a per-match report and a monthly (period) report
+-- =============================================================================
+
+insert into public.reports
+  (event_id, team_id, created_by, report_type, title, content_markdown)
+values (
+  :'match_event_id', null, :'coach_id', 'match_report',
+  'JPL Division 1 vs Barnet Youth — Match Report',
+  E'# JPL Division 1 vs Barnet Youth\n\n_A composed 2–0 win, clean sheet held under late pressure._\n\n## What you hoped to see\n- ✓ **Composure playing out from the back** — settled build-up throughout\n- ~ **Midfield finding space between lines** — Maya influential at the 6\n\n## Standouts\n- Oscar — goal + assist, man of the match\n- Maya — clean sheet, controlled the base of midfield'
+)
+on conflict (id) do nothing;
+
+insert into public.reports
+  (event_id, team_id, created_by, report_type, title, period_start, period_end, content_markdown)
+values (
+  null, :'team_id', :'coach_id', 'monthly_report',
+  'U15 JPL — Monthly Report (June)',
+  '2026-06-01', '2026-06-30',
+  E'# U15 JPL — Monthly Report (June)\n\n**Record:** 1W 0D 0L · 2–0 goals\n\n## Themes this month\n- Building out under pressure has become a throughline across sessions\n- Scanning before receiving showing up consistently (Oscar)\n\n## Training ↔ match\n- Build-up work from training carried into the match (composed playing out, Maya at the 6)\n- Middle-third organisation flagged in training didn''t recur in the match — worth watching\n\n## Focus ahead\n- Middle-third organisation under fatigue\n- Receiving on the half-turn under pressure'
+)
+on conflict (id) do nothing;

@@ -73,9 +73,12 @@ export type ReflectionType = "coach" | "player" | "coach_developer";
 export type QuestionType = "multiple_choice" | "voice" | "text" | "rating";
 
 export type ReportType =
-  | "coach_reflection"
+  | "training_report"
+  | "match_report"
+  | "weekly_report"
+  | "monthly_report"
+  | "season_report"
   | "player_report"
-  | "team_report"
   | "coach_observation";
 
 export type InsightType =
@@ -315,10 +318,13 @@ export interface FollowupAnswer {
 
 export interface Report {
   id: string;
-  event_id: string;
+  event_id: string | null; // null for period (monthly/season) reports
+  team_id: string | null; // set for period reports
   created_by: string | null;
   report_type: ReportType;
   title: string;
+  period_start: string | null; // monthly/season reports
+  period_end: string | null;
   content_json: Record<string, unknown>;
   content_markdown: string | null;
   pdf_path: string | null;

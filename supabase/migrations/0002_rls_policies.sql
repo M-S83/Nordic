@@ -82,10 +82,12 @@ as $$
   select exists (
     select 1 from public.reports r
     left join public.events e on e.id = r.event_id
+    left join public.teams t on t.id = r.team_id
     where r.id = target_report
       and (
         r.created_by = auth.uid()
-        or (e.club_id is not null and public.is_club_admin(e.club_id))
+        or (e.club_id is not null and public.is_club_admin(e.club_id))     -- per-event report
+        or (t.club_id is not null and public.is_club_admin(t.club_id))     -- period report
         or exists (
           select 1 from public.report_access ra
           where ra.report_id = r.id and ra.user_id = auth.uid()
@@ -421,9 +423,18 @@ create policy "reports: read"
   on public.reports for select
   using (public.can_access_report(id));
 
-create policy "reports: insert via event access"
+create policy "reports: insert via event or team access"
   on public.reports for insert
-  with check (created_by = auth.uid() and public.can_access_event(event_id));
+  with check (
+    created_by = auth.uid()
+    and (
+      (event_id is not null and public.can_access_event(event_id))          -- per-event report
+      or (event_id is null and team_id is not null and exists (             -- period report
+        select 1 from public.teams t
+        where t.id = reports.team_id and public.is_club_staff(t.club_id)
+      ))
+    )
+  );
 
 create policy "reports: update by creator"
   on public.reports for update

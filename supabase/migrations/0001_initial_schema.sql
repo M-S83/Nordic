@@ -162,10 +162,16 @@ create type question_type as enum (
   'rating'
 );
 
+-- Reports come at different cadences. training/match are per-event;
+-- weekly/monthly/season aggregate across a date range for a team (a weekly
+-- report combines that week's training and match).
 create type report_type as enum (
-  'coach_reflection',
+  'training_report',
+  'match_report',
+  'weekly_report',
+  'monthly_report',
+  'season_report',
   'player_report',
-  'team_report',
   'coach_observation'
 );
 
@@ -485,10 +491,13 @@ create index followup_answers_question_id_idx on public.followup_answers (questi
 
 create table public.reports (
   id                uuid primary key default gen_random_uuid(),
-  event_id          uuid not null references public.events (id) on delete cascade,
+  event_id          uuid references public.events (id) on delete cascade, -- null for period reports
+  team_id           uuid references public.teams (id) on delete set null, -- set for monthly/season reports
   created_by        uuid references auth.users (id) on delete set null,
   report_type       report_type not null,
   title             text not null,
+  period_start      date,                  -- monthly / season reports
+  period_end        date,
   content_json      jsonb not null default '{}'::jsonb,
   content_markdown  text,
   pdf_path          text,                  -- path within `reports` bucket
@@ -496,6 +505,7 @@ create table public.reports (
 );
 
 create index reports_event_id_idx on public.reports (event_id);
+create index reports_team_id_idx on public.reports (team_id);
 
 -- Explicit grants of access to a report (beyond owner / club admin) -----------
 create table public.report_access (

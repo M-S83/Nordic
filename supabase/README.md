@@ -154,11 +154,24 @@ notes can be captured by **text or by voice** — voice recordings go to
 `audio-recordings` and `transcribe-audio` fills in the transcript / answer text.
 `generate-report` prefers the `enriched_summary` when one exists.
 
-### Report generation
-`generate-report` aggregates an event’s observations + reflection (+ squad
-roster) into a `reports` row with `content_json` and `content_markdown`; an
-optional PDF can be rendered to the `reports` bucket. Reports are visible only to
-the creator, club admins, or users explicitly listed in `report_access`.
+### Report generation (per-event and period)
+Reports come at several cadences (`report_type`):
+- **Per-event** — `training_report` / `match_report`: `generate-report`
+  aggregates one event’s observations + reflection (+ squad roster; match result
+  and per-player stats for matches) into a `reports` row (`event_id` set).
+- **Period** — `weekly_report` / `monthly_report` / `season_report`:
+  `generate-period-report` combines *every note* from *all* of a team’s events
+  across a date range (a weekly report combines that week’s training and match)
+  — results (W/D/L, goals), player highlights, recurring themes and development
+  threads — into a `reports` row with `event_id` null and `team_id` +
+  `period_start` / `period_end` set. It reads notes **split by context** and
+  reasons across them: what’s worked in training that’s now showing up in
+  matches, what isn’t transferring yet, and what’s emerging only on matchday
+  (the report’s "Training ↔ match" section).
+
+Both write `content_json` + `content_markdown` (optional PDF to the `reports`
+bucket). Reports are visible only to the creator, club admins, or users listed
+in `report_access`.
 
 ### Long-term insight tracking
 `update-insights` scans a user’s observations, counts recurring tags per player /

@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
       .from("events").select("*").eq("id", event_id).single();
     if (error || !event) return jsonResponse({ error: "Not found or not permitted" }, 403);
 
-    const [{ data: observations }, { data: reflections }, { data: sheetPlayers }] =
+    const [{ data: observations }, { data: reflections }, { data: sheetPlayers },
+           { data: matchDetails }, { data: matchStats }] =
       await Promise.all([
         supa.from("observations").select("*").eq("event_id", event_id)
           .order("timestamp_seconds", { ascending: true }),
@@ -34,6 +35,8 @@ Deno.serve(async (req) => {
         supa.from("team_sheet_players")
           .select("*, team_sheets!inner(event_id)")
           .eq("team_sheets.event_id", event_id),
+        supa.from("match_details").select("*").eq("event_id", event_id).maybeSingle(),
+        supa.from("match_stats").select("*, players(display_name)").eq("event_id", event_id),
       ]);
 
     const payload = JSON.stringify({
@@ -57,6 +60,9 @@ Deno.serve(async (req) => {
           summary: reflections[0].enriched_summary ?? reflections[0].summary,
         }
         : null,
+      // Included for match reports (null/empty for training).
+      match_result: matchDetails ?? null,
+      match_stats: matchStats ?? [],
       roster: sheetPlayers ?? [],
     });
 
