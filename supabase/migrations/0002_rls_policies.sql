@@ -102,7 +102,11 @@ alter table public.clubs               enable row level security;
 alter table public.profiles            enable row level security;
 alter table public.teams               enable row level security;
 alter table public.players             enable row level security;
+alter table public.competitions        enable row level security;
 alter table public.events              enable row level security;
+alter table public.event_attendance    enable row level security;
+alter table public.match_details       enable row level security;
+alter table public.match_stats         enable row level security;
 alter table public.team_sheets         enable row level security;
 alter table public.team_sheet_players  enable row level security;
 alter table public.observations        enable row level security;
@@ -169,6 +173,27 @@ create policy "teams: update for club staff or creator"
 
 create policy "teams: delete for club admin or creator"
   on public.teams for delete
+  using (created_by = auth.uid() or public.is_club_admin(club_id));
+
+-- =============================================================================
+-- COMPETITIONS  (club staff manage; names are editable)
+-- =============================================================================
+
+create policy "competitions: read for club staff or creator"
+  on public.competitions for select
+  using (created_by = auth.uid() or public.is_club_staff(club_id));
+
+create policy "competitions: insert for club staff"
+  on public.competitions for insert
+  with check (created_by = auth.uid() and public.is_club_staff(club_id));
+
+create policy "competitions: update for club staff or creator"
+  on public.competitions for update
+  using (created_by = auth.uid() or public.is_club_staff(club_id))
+  with check (created_by = auth.uid() or public.is_club_staff(club_id));
+
+create policy "competitions: delete for club admin or creator"
+  on public.competitions for delete
   using (created_by = auth.uid() or public.is_club_admin(club_id));
 
 -- =============================================================================
@@ -277,6 +302,22 @@ create policy "observations: access own or via event"
     user_id = auth.uid()
     or (event_id is not null and public.can_access_event(event_id))
   );
+
+-- attendance / match record (event-scoped) ------------------------------------
+create policy "event_attendance: access via event"
+  on public.event_attendance for all
+  using (public.can_access_event(event_id))
+  with check (public.can_access_event(event_id));
+
+create policy "match_details: access via event"
+  on public.match_details for all
+  using (public.can_access_event(event_id))
+  with check (public.can_access_event(event_id));
+
+create policy "match_stats: access via event"
+  on public.match_stats for all
+  using (public.can_access_event(event_id))
+  with check (public.can_access_event(event_id));
 
 -- =============================================================================
 -- REFLECTIONS

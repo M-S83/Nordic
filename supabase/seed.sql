@@ -21,6 +21,8 @@
 \set player_jay          '44444444-4444-4444-4444-444444444403'
 \set match_event_id      '55555555-5555-5555-5555-555555555501'
 \set training_event_id   '55555555-5555-5555-5555-555555555502'
+\set league_comp_id      '66666666-6666-6666-6666-666666666601'
+\set cup_comp_id         '66666666-6666-6666-6666-666666666602'
 
 -- Demo auth user (bypasses normal signup). -----------------------------------
 insert into auth.users (id, email, raw_user_meta_data, created_at, updated_at)
@@ -48,6 +50,13 @@ insert into public.teams (id, club_id, name, age_group, created_by)
 values (:'team_id', :'club_id', 'U15 JPL', 'U15', :'coach_id')
 on conflict (id) do nothing;
 
+-- Competitions (editable names) -----------------------------------------------
+insert into public.competitions (id, club_id, team_id, name, kind, created_by)
+values
+  (:'league_comp_id', :'club_id', :'team_id', 'JPL Division 1', 'league', :'coach_id'),
+  (:'cup_comp_id',    :'club_id', :'team_id', 'County Cup',     'cup',    :'coach_id')
+on conflict (id) do nothing;
+
 -- Players ---------------------------------------------------------------------
 insert into public.players
   (id, team_id, first_name, last_name, display_name, shirt_number, position, notes, created_by)
@@ -59,13 +68,13 @@ on conflict (id) do nothing;
 
 -- Events ----------------------------------------------------------------------
 insert into public.events
-  (id, user_id, club_id, team_id, event_type, title, event_date, opposition, venue, focus_area, status, started_at, ended_at)
+  (id, user_id, club_id, team_id, competition_id, event_type, title, event_date, opposition, venue, focus_area, status, started_at, ended_at)
 values
-  (:'training_event_id', :'coach_id', :'club_id', :'team_id', 'training_session',
+  (:'training_event_id', :'coach_id', :'club_id', :'team_id', null, 'training_session',
    'Tuesday Session — Playing Out From The Back', '2026-06-16', null, 'Home Ground',
    'Building under pressure', 'completed', '2026-06-16 18:00:00+00', '2026-06-16 19:30:00+00'),
-  (:'match_event_id', :'coach_id', :'club_id', :'team_id', 'match',
-   'League Match vs Barnet Youth', '2026-06-18', 'Barnet Youth', 'Home',
+  (:'match_event_id', :'coach_id', :'club_id', :'team_id', :'league_comp_id', 'match',
+   'JPL Division 1 vs Barnet Youth', '2026-06-18', 'Barnet Youth', 'Home Ground',
    'Our build-up shape', 'completed', '2026-06-18 15:00:00+00', '2026-06-18 16:45:00+00')
 on conflict (id) do nothing;
 
@@ -121,6 +130,34 @@ values
    'idea: give oscar a half-space receiving role next block',
    'Idea: try Oscar in a half-space receiving role next training block.',
    array['idea','role','oscar'], 'neutral');
+
+-- Attendance (who was there) --------------------------------------------------
+insert into public.event_attendance (event_id, player_id, status)
+values
+  (:'training_event_id', :'player_oscar', 'present'),
+  (:'training_event_id', :'player_maya',  'present'),
+  (:'training_event_id', :'player_jay',   'injured'),
+  (:'match_event_id',    :'player_oscar', 'present'),
+  (:'match_event_id',    :'player_maya',  'present'),
+  (:'match_event_id',    :'player_jay',   'present')
+on conflict (event_id, player_id) do nothing;
+
+-- Match record: scoreline, venue side, man of the match -----------------------
+insert into public.match_details
+  (event_id, home_away, goals_for, goals_against, man_of_the_match, notes)
+values
+  (:'match_event_id', 'home', 2, 0, :'player_oscar',
+   'Clean sheet held under late pressure; controlled build-up throughout.')
+on conflict (event_id) do nothing;
+
+-- Per-player match stats (who scored, assists, cards, clean sheets) -----------
+insert into public.match_stats
+  (event_id, player_id, goals, assists, yellow_cards, red_cards, clean_sheet, minutes_played)
+values
+  (:'match_event_id', :'player_oscar', 1, 1, 0, 0, false, 90),
+  (:'match_event_id', :'player_jay',   1, 0, 1, 0, false, 78),
+  (:'match_event_id', :'player_maya',  0, 1, 0, 0, true,  90)
+on conflict (event_id, player_id) do nothing;
 
 -- Live observations (match) ---------------------------------------------------
 insert into public.observations

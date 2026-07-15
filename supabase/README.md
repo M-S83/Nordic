@@ -52,12 +52,13 @@ supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
 
 ## Data model at a glance
 
-`clubs → teams → players` is the org hierarchy. **Everything else hangs off an
-`event`** (training session, match, coach observation or player reflection). An
-event owns its `team_sheets` (+ `team_sheet_players`), `observations`,
-`reflections` and `reports`. Reflections own `followup_questions`, which own
-`followup_answers`. `insights` aggregate patterns over time and can be scoped to
-a user, club, team or player.
+`clubs → teams → players` is the org hierarchy, with `competitions` (leagues /
+cups) alongside. **Everything else hangs off an `event`** (training session,
+match, coach observation or player reflection). An event owns its `team_sheets`
+(+ `team_sheet_players`), `observations`, `event_attendance`, `reflections` and
+`reports`; match events also own `match_details` and `match_stats`. Reflections
+own `followup_questions`, which own `followup_answers`. `insights` aggregate
+patterns over time and can be scoped to a user, club, team or player.
 
 ## How the backend supports each capability
 
@@ -96,6 +97,16 @@ A `team_sheets` row points at a file in the `uploads` bucket. `process-team-shee
 OCRs/extracts your squad roster into `team_sheet_players`, linking shirt numbers
 to canonical `players`. `clean-observation` then auto-attributes a note like
 “Number 8 scans before receiving” to the right player via the shirt number.
+
+### Attendance & match record
+For any training or match, tick who was there: `event_attendance` holds one row
+per player with a `status` (`present` / `absent` / `injured` / `unavailable`).
+Matches also record results — `match_details` stores `home_away`, `goals_for` /
+`goals_against` (with a **generated** `result` of win/draw/loss), `man_of_the_match`
+and notes; `match_stats` holds per-player `goals`, `assists`, `yellow_cards`,
+`red_cards`, `clean_sheet` and `minutes_played` (so "who scored / assisted" falls
+straight out). A match's `event.competition_id` links it to a `competitions` row
+— a league or cup with an **editable** name (e.g. rename "Cup 1" to "County Cup").
 
 ### Post-event reflection
 `reflections` hold the `raw_transcript`, a `summary`, and JSONB lists

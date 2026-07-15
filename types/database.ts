@@ -24,6 +24,14 @@ export type EventType =
 
 export type EventStatus = "draft" | "live" | "completed";
 
+export type AttendanceStatus = "present" | "absent" | "injured" | "unavailable";
+
+export type MatchResult = "win" | "draw" | "loss";
+
+export type CompetitionKind = "league" | "cup";
+
+export type HomeAway = "home" | "away" | "neutral";
+
 export type TeamSheetSource = "image" | "pdf" | "manual";
 
 export type ProcessingStatus = "pending" | "processing" | "completed" | "failed";
@@ -107,11 +115,22 @@ export interface Player {
   created_at: string;
 }
 
+export interface Competition {
+  id: string;
+  club_id: string;
+  team_id: string | null;
+  name: string; // editable
+  kind: CompetitionKind;
+  created_by: string | null;
+  created_at: string;
+}
+
 export interface Event {
   id: string;
   user_id: string;
   club_id: string | null;
   team_id: string | null;
+  competition_id: string | null; // matches only
   event_type: EventType;
   title: string;
   event_date: string | null; // ISO date
@@ -123,6 +142,39 @@ export interface Event {
   ended_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface EventAttendance {
+  id: string;
+  event_id: string;
+  player_id: string;
+  status: AttendanceStatus;
+  created_at: string;
+}
+
+export interface MatchDetails {
+  id: string;
+  event_id: string;
+  home_away: HomeAway | null;
+  goals_for: number;
+  goals_against: number;
+  result: MatchResult; // generated: win / draw / loss
+  man_of_the_match: string | null; // player id
+  notes: string | null;
+  created_at: string;
+}
+
+export interface MatchStats {
+  id: string;
+  event_id: string;
+  player_id: string;
+  goals: number;
+  assists: number;
+  yellow_cards: number;
+  red_cards: number;
+  clean_sheet: boolean;
+  minutes_played: number | null;
+  created_at: string;
 }
 
 export interface TeamSheet {

@@ -34,6 +34,35 @@ create type event_status as enum (
   'completed'
 );
 
+-- Whether a player was there for a given training/match.
+create type attendance_status as enum (
+  'present',
+  'absent',
+  'injured',
+  'unavailable'
+);
+
+-- Match outcome from our team's perspective.
+create type match_result as enum (
+  'win',
+  'draw',
+  'loss'
+);
+
+-- A competition is a league or a cup. Names are editable (e.g. rename
+-- "Cup 1" to "County Cup"); the kind drives how tables/standings behave.
+create type competition_kind as enum (
+  'league',
+  'cup'
+);
+
+-- Whether a match was played at home, away, or a neutral venue.
+create type home_away as enum (
+  'home',
+  'away',
+  'neutral'
+);
+
 create type team_sheet_source as enum (
   'image',
   'pdf',
@@ -175,26 +204,41 @@ create table public.players (
 
 create index players_team_id_idx on public.players (team_id);
 
+-- Competitions: leagues / cups a team plays in, with editable names ----------
+create table public.competitions (
+  id          uuid primary key default gen_random_uuid(),
+  club_id     uuid not null references public.clubs (id) on delete cascade,
+  team_id     uuid references public.teams (id) on delete set null,
+  name        text not null,              -- editable, e.g. "JPL Division 1", "County Cup"
+  kind        competition_kind not null default 'league',
+  created_by  uuid references auth.users (id) on delete set null,
+  created_at  timestamptz not null default now()
+);
+
+create index competitions_club_id_idx on public.competitions (club_id);
+create index competitions_team_id_idx on public.competitions (team_id);
+
 -- =============================================================================
 -- EVENTS  (everything starts with an event)
 -- =============================================================================
 
 create table public.events (
-  id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references auth.users (id) on delete cascade,
-  club_id     uuid references public.clubs (id) on delete set null,
-  team_id     uuid references public.teams (id) on delete set null,
-  event_type  event_type not null,
-  title       text not null,
-  event_date  date,
-  opposition  text,
-  venue       text,
-  focus_area  text,
-  status      event_status not null default 'draft',
-  started_at  timestamptz,
-  ended_at    timestamptz,
-  created_at  timestamptz not null default now(),
-  updated_at  timestamptz not null default now()
+  id              uuid primary key default gen_random_uuid(),
+  user_id         uuid not null references auth.users (id) on delete cascade,
+  club_id         uuid references public.clubs (id) on delete set null,
+  team_id         uuid references public.teams (id) on delete set null,
+  competition_id  uuid references public.competitions (id) on delete set null, -- matches only
+  event_type      event_type not null,
+  title           text not null,
+  event_date      date,
+  opposition      text,                   -- the opponent for a match
+  venue           text,
+  focus_area      text,
+  status          event_status not null default 'draft',
+  started_at      timestamptz,
+  ended_at        timestamptz,
+  created_at      timestamptz not null default now(),
+  updated_at      timestamptz not null default now()
 );
 
 create index events_user_id_idx on public.events (user_id);
@@ -273,6 +317,63 @@ create index observations_user_id_idx on public.observations (user_id);
 create index observations_team_id_idx on public.observations (team_id);
 create index observations_player_id_idx on public.observations (player_id);
 create index observations_tags_idx on public.observations using gin (tags);
+
+-- =============================================================================
+-- ATTENDANCE  (tick who was there — training or match)
+-- =============================================================================
+
+create table public.event_attendance (
+  id          uuid primary key default gen_random_uuid(),
+  event_id    uuid not null references public.events (id) on delete cascade,
+  player_id   uuid not null references public.players (id) on delete cascade,
+  status      attendance_status not null default 'present',
+  created_at  timestamptz not null default now(),
+  unique (event_id, player_id)
+);
+
+create index event_attendance_event_id_idx on public.event_attendance (event_id);
+create index event_attendance_player_id_idx on public.event_attendance (player_id);
+
+-- =============================================================================
+-- MATCH RECORD  (score + per-player stats — match events only)
+-- =============================================================================
+
+-- One row per match event: the scoreline. `result` is derived automatically.
+create table public.match_details (
+  id                uuid primary key default gen_random_uuid(),
+  event_id          uuid not null unique references public.events (id) on delete cascade,
+  home_away         home_away,
+  goals_for         int not null default 0,
+  goals_against     int not null default 0,
+  result            match_result generated always as (
+                       case
+                         when goals_for > goals_against then 'win'::match_result
+                         when goals_for < goals_against then 'loss'::match_result
+                         else 'draw'::match_result
+                       end
+                     ) stored,
+  man_of_the_match  uuid references public.players (id) on delete set null,
+  notes             text,
+  created_at        timestamptz not null default now()
+);
+
+-- One row per player per match: goals, assists, cards, clean sheet, minutes.
+create table public.match_stats (
+  id              uuid primary key default gen_random_uuid(),
+  event_id        uuid not null references public.events (id) on delete cascade,
+  player_id       uuid not null references public.players (id) on delete cascade,
+  goals           int not null default 0,
+  assists         int not null default 0,
+  yellow_cards    int not null default 0,
+  red_cards       int not null default 0,
+  clean_sheet     boolean not null default false,
+  minutes_played  int,
+  created_at      timestamptz not null default now(),
+  unique (event_id, player_id)
+);
+
+create index match_stats_event_id_idx on public.match_stats (event_id);
+create index match_stats_player_id_idx on public.match_stats (player_id);
 
 -- =============================================================================
 -- POST-EVENT REFLECTIONS

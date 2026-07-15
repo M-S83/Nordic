@@ -51,7 +51,16 @@ Functions in `../supabase`).
 > 1. **Home / dashboard** — recent events, quick "Start live capture", recent
 >    insights.
 > 2. **Event list + create event** — fields: title, type, date, opposition,
->    venue, focus area, team. Status `draft → live → completed`.
+>    venue, focus area, team. Status `draft → live → completed`. For a match,
+>    also pick a **competition** (a `competitions` row — league or cup, with
+>    editable names, managed in team settings) and set **home / away / neutral**.
+> 2b. **Attendance** — for any training or match, tick which players were there;
+>    each becomes an `event_attendance` row with status `present` / `absent` /
+>    `injured` / `unavailable`.
+> 2c. **Match record** (match events) — enter the score (`goals_for` /
+>    `goals_against`; `result` win/draw/loss is derived automatically), pick
+>    **man of the match**, and per player log goals, assists, yellow/red cards,
+>    clean sheet and minutes (`match_details` + `match_stats`).
 > 3. **Note capture** (the centrepiece) — an `observation` is a note that can be
 >    taken at any point, marked by `capture_phase`: `pre_event` (planning notes
 >    before training/a match), `live` (rapid-fire during it), `post_event` (a
