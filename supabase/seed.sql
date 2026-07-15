@@ -23,6 +23,8 @@
 \set training_event_id   '55555555-5555-5555-5555-555555555502'
 \set league_comp_id      '66666666-6666-6666-6666-666666666601'
 \set cup_comp_id         '66666666-6666-6666-6666-666666666602'
+\set reflection_id       '77777777-7777-7777-7777-777777777701'
+\set question_id         '88888888-8888-8888-8888-888888888801'
 
 -- Demo auth user (bypasses normal signup). -----------------------------------
 insert into auth.users (id, email, raw_user_meta_data, created_at, updated_at)
@@ -190,3 +192,47 @@ values
    'really pleased we stayed calm on the ball even when they pressed',
    'Pleased with how calm we stayed on the ball under their press.',
    array['composure','build_up'], 'positive', null);
+
+-- =============================================================================
+-- Reflection on the training session — with the "hoped to see" loop closed
+-- =============================================================================
+
+insert into public.reflections
+  (id, event_id, user_id, reflection_type, raw_transcript, summary, enriched_summary,
+   what_went_well, what_did_not_work, learning_evidence, action_points, suggested_next_focus,
+   hoped_to_see_review)
+values (
+  :'reflection_id', :'training_event_id', :'coach_id', 'coach',
+  'good session overall, scanning was there early but it got loose in the middle third',
+  'A positive session for build-up: scanning was consistent early, though organisation dropped in the middle third under fatigue.',
+  'A positive session for build-up: scanning was consistent early (Oscar a clear example). Organisation dropped in the middle third under fatigue — the constraints were too loose, which is what made it chaotic.',
+  '["Build-up patience improved in the first block","Oscar''s scanning consistent all session"]'::jsonb,
+  '["Middle-third organisation broke down under fatigue"]'::jsonb,
+  '["Oscar scans before receiving (5'')","Jay beats his marker 1v1 (31'')"]'::jsonb,
+  '["Tighten constraints in the middle block"]'::jsonb,
+  '["Receiving on the half-turn under pressure"]'::jsonb,
+  -- Each thing the coach hoped to see, checked against the live notes:
+  '[
+    {"item":"Players scanning before they receive","status":"showed_up","evidence":"Oscar scans before receiving (5'')"},
+    {"item":"Centre-backs splitting to create angles","status":"not_observed","evidence":""},
+    {"item":"Keeper used as a spare man","status":"not_observed","evidence":""},
+    {"item":"Calm decisions under pressure","status":"partly","evidence":"Middle third became chaotic under fatigue"}
+  ]'::jsonb
+)
+on conflict (id) do nothing;
+
+-- A gap becomes a gentle "why wasn't this seen?" follow-up (skippable) ---------
+insert into public.followup_questions (id, reflection_id, question_text, question_type, options)
+values (
+  :'question_id', :'reflection_id',
+  'You hoped to see “Centre-backs splitting to create angles”, but none of your notes touched on it — did it not come up, or did you not get a chance to look?',
+  'text', '[]'::jsonb
+)
+on conflict (id) do nothing;
+
+insert into public.followup_answers (id, question_id, answer_text)
+values (
+  '99999999-9999-9999-9999-999999999901', :'question_id',
+  'We changed the drill before I got to the back-line work, so I never looked at it.'
+)
+on conflict (id) do nothing;

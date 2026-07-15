@@ -26,6 +26,7 @@ supabase/
     process-team-sheet/            Team sheet → extracted players
     clean-observation/             Raw note → cleaned note + tags + sentiment
     generate-reflection-questions/ Reflection → optional context-nudge questions
+    review-intent/                 hoping_to_see vs notes → review + gap questions
     enrich-reflection/             Answers → reflection.enriched_summary
     generate-report/               Event → structured report (JSON + markdown)
     update-insights/               Observations → long-term pattern insights
@@ -117,6 +118,16 @@ Matches also record results — `match_details` stores `home_away`, `formation`,
 `red_cards`, `clean_sheet` and `minutes_played` (so "who scored / assisted" falls
 straight out). A match's `event.competition_id` links it to a `competitions` row
 — a league or cup with an **editable** name (e.g. rename "Cup 1" to "County Cup").
+
+### Closing the intent loop
+`review-intent` takes the event's `hoping_to_see` list and checks each item
+against the notes actually captured, writing `reflections.hoped_to_see_review`
+(`showed_up` / `partly` / `not_observed`, with the note as evidence). Every
+**not-observed** aim becomes a gentle, skippable follow-up — "you hoped to see X,
+nothing was noted on it — did it not come up, or did you not get to look?" — so
+the gap becomes part of the reflection. `generate-report` then renders a "what
+you hoped to see → what showed up" section. Mirror, not verdict: it only reports
+whether the notes touched each aim, never whether the team was good at it.
 
 ### Post-event reflection
 `reflections` hold the `raw_transcript`, a `summary`, and JSONB lists

@@ -93,6 +93,10 @@ Functions in `../supabase`).
 >    detailed, show none. Answers can also be text or voice. When the coach adds
 >    any context, call `enrich-reflection` to fold it back into the reflection
 >    (shown as `enriched_summary`); skipping is always fine and changes nothing.
+> 5b. **What you hoped to see** — call `review-intent`, then show each
+>    `hoping_to_see` item with a ✓ showed_up / ~ partly / ✗ not_observed status
+>    and its evidence note (`reflections.hoped_to_see_review`). Each not-observed
+>    item also appears as a skippable "why wasn't this seen?" follow-up question.
 > 6. **Reports** — view generated report (`content_markdown` rendered nicely +
 >    optional PDF download from `reports` bucket). Reports are private to
 >    creator/club-admin/granted users.
@@ -101,7 +105,8 @@ Functions in `../supabase`).
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
-> `enrich-reflection`, `generate-report`, `update-insights`. Invoke via
+> `review-intent`, `enrich-reflection`, `generate-report`, `update-insights`.
+> Invoke via
 > `supabase.functions.invoke(...)` and reflect their results in the UI (e.g.
 > show the cleaned note after `clean-observation`, or the enriched summary after
 > `enrich-reflection`).

@@ -40,7 +40,11 @@ Deno.serve(async (req) => {
       event: {
         type: event.event_type, title: event.title, date: event.event_date,
         opposition: event.opposition, focus_area: event.focus_area,
+        purpose: event.purpose,
       },
+      // What the coach hoped to see up front, and how the notes matched it.
+      hoping_to_see: event.hoping_to_see ?? [],
+      hoped_to_see_review: reflections?.[0]?.hoped_to_see_review ?? [],
       observations: (observations ?? []).map((o) => ({
         minute: o.match_minute, type: o.observation_type, subject: o.subject_type,
         note: o.cleaned_note ?? o.raw_note, tags: o.tags, sentiment: o.sentiment,
@@ -60,9 +64,12 @@ Deno.serve(async (req) => {
       system:
         "You produce structured football coaching reflection reports. " +
         "Principle: MIRROR, NOT VERDICT — organise observations into themes and " +
-        "patterns; do not grade or judge. Return ONLY JSON with keys: " +
-        '"headline" (string), "sections" (array of {heading, points: string[]}), ' +
-        '"patterns" (string[]), "suggested_next_focus" (string[]).',
+        "patterns; do not grade or judge. Include a \"hoped_to_see\" section that " +
+        "reflects each thing the coach hoped to see back against the notes " +
+        "(what showed up, and what wasn't observed — plainly, no judgement). " +
+        'Return ONLY JSON with keys: "headline" (string), "sections" (array of ' +
+        '{heading, points: string[]}), "hoped_to_see" (array of {item, status, ' +
+        'note}), "patterns" (string[]), "suggested_next_focus" (string[]).',
       prompt: `Report type: ${report_type}\n\nData:\n${payload}`,
       maxTokens: 2048,
     });
@@ -102,6 +109,14 @@ function toMarkdown(title: string, c: any): string {
   for (const s of c.sections ?? []) {
     lines.push(`\n## ${s.heading}`);
     for (const p of s.points ?? []) lines.push(`- ${p}`);
+  }
+  if (c.hoped_to_see?.length) {
+    const mark = (st: string) =>
+      st === "showed_up" ? "✓" : st === "partly" ? "~" : "✗";
+    lines.push(`\n## What you hoped to see`);
+    for (const h of c.hoped_to_see) {
+      lines.push(`- ${mark(h.status)} **${h.item}**${h.note ? ` — ${h.note}` : ""}`);
+    }
   }
   if (c.patterns?.length) {
     lines.push(`\n## Patterns`);

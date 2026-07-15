@@ -408,6 +408,9 @@ create table public.reflections (
   learning_evidence    jsonb not null default '[]'::jsonb,
   action_points        jsonb not null default '[]'::jsonb,
   suggested_next_focus  jsonb not null default '[]'::jsonb,
+  -- Each event.hoping_to_see item checked against the live notes:
+  -- [{ "item": text, "status": "showed_up"|"partly"|"not_observed", "evidence": text }]
+  hoped_to_see_review  jsonb not null default '[]'::jsonb,
   audio_path           text,               -- path within `audio-recordings` bucket
   created_at           timestamptz not null default now(),
   updated_at           timestamptz not null default now()

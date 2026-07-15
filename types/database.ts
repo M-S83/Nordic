@@ -244,9 +244,16 @@ export interface Reflection {
   learning_evidence: string[];
   action_points: string[];
   suggested_next_focus: string[];
+  hoped_to_see_review: HopedToSeeReviewItem[];
   audio_path: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface HopedToSeeReviewItem {
+  item: string;
+  status: "showed_up" | "partly" | "not_observed";
+  evidence: string;
 }
 
 export interface FollowupQuestion {
