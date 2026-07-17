@@ -68,6 +68,18 @@ values
   (:'player_jay',   :'team_id', 'Jay',   'Owens', 'Jay',    11, 'Left Wing', null,                            :'coach_id')
 on conflict (id) do nothing;
 
+-- Coach voice profile (learned from the coach's own writing) -------------------
+insert into public.coach_voice_profiles
+  (user_id, style_summary, glossary, language_level, sample_count)
+values (
+  :'coach_id',
+  'Grassroots youth coach. Plain, encouraging, practical language — talks about what he sees, not textbook theory. Prefers everyday phrasing over tactical jargon.',
+  '["get his head up","first touch","play out from the back","shape","scanning","under pressure","half-turn","middle third"]'::jsonb,
+  'plain',
+  12
+)
+on conflict (user_id) do nothing;
+
 -- Player development notes (a running coaching log) ---------------------------
 insert into public.player_development_notes (player_id, user_id, category, note)
 values

@@ -12,6 +12,7 @@
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { voiceInstruction } from "../_shared/voice.ts";
 
 interface GeneratedQuestion {
   question_text: string;
@@ -42,6 +43,9 @@ Deno.serve(async (req) => {
       suggested_next_focus: ref.suggested_next_focus,
     });
 
+    const admin = serviceClient();
+    const voice = await voiceInstruction(admin, ref.user_id);
+
     const raw = await callClaude({
       system:
         "You help a coach add a little context to their own reflection. " +
@@ -59,7 +63,8 @@ Deno.serve(async (req) => {
         "always skippable.\n" +
         'Return ONLY a JSON array of objects with keys: question_text (string), ' +
         'question_type ("text"|"voice"|"multiple_choice"|"rating"), options ' +
-        "(array of {value,label}; [] unless multiple_choice).",
+        "(array of {value,label}; [] unless multiple_choice)." +
+        voice,
       prompt: context,
     });
 
@@ -95,7 +100,6 @@ Deno.serve(async (req) => {
       }
     }
 
-    const admin = serviceClient();
     const { data: inserted, error: insErr } = rows.length
       ? await admin.from("followup_questions").insert(rows).select()
       : { data: [], error: null };

@@ -30,7 +30,10 @@ Functions in `../supabase`).
 >
 > **Product principle: "Mirror, not verdict."** The app helps users reflect,
 > organise and spot patterns — it never judges them. Keep all AI-facing copy
-> neutral and curious, never evaluative.
+> neutral and curious, never evaluative. It also mirrors the coach's **own voice**:
+> `update-voice-profile` learns each coach's language from their writing, and every
+> AI response comes back in their words and at their level (grassroots → badged),
+> so never impose textbook jargon — reflect how the coach actually speaks.
 >
 > **Auth:** Supabase Auth (email magic link). On signup, a `profiles` row is
 > auto-created with a `role`. After login, route the user by `profiles.role`:
@@ -124,7 +127,8 @@ Functions in `../supabase`).
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
-> `review-intent`, `enrich-reflection`, `generate-report`, `update-insights`.
+> `review-intent`, `enrich-reflection`, `generate-report`,
+> `generate-period-report`, `update-insights`, `update-voice-profile`.
 > Invoke via
 > `supabase.functions.invoke(...)` and reflect their results in the UI (e.g.
 > show the cleaned note after `clean-observation`, or the enriched summary after

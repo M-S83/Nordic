@@ -17,6 +17,7 @@
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -110,6 +111,9 @@ Deno.serve(async (req) => {
       hoped_to_see_review: (reflections ?? []).flatMap((r) => r.hoped_to_see_review ?? []),
     });
 
+    const admin = serviceClient();
+    const voice = await voiceInstruction(admin, team.created_by);
+
     const raw = await callClaude({
       system:
         "You write a football team's period report (weekly, monthly or " +
@@ -126,7 +130,8 @@ Deno.serve(async (req) => {
         '"headline" (string), "results_summary" (string), "sections" (array of ' +
         '{heading, points: string[]}), "player_highlights" (string[]), ' +
         '"recurring_themes" (string[]), "training_to_match" (string[]), ' +
-        '"focus_ahead" (string[]).',
+        '"focus_ahead" (string[]).' +
+        voice,
       prompt: `Report type: ${report_type}\n\nData:\n${payload}`,
       maxTokens: 3072,
     });
@@ -140,7 +145,6 @@ Deno.serve(async (req) => {
     const heading = title ?? `${team.name} — ${periodLabel} Report`;
     const content_markdown = toMarkdown(heading, record, content_json);
 
-    const admin = serviceClient();
     const { data: report, error: insErr } = await admin.from("reports").insert({
       event_id: null,
       team_id,

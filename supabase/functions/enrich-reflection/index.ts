@@ -16,6 +16,7 @@
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -48,6 +49,9 @@ Deno.serve(async (req) => {
       return jsonResponse({ ok: true, enriched: false, reason: "no context added" });
     }
 
+    const admin = serviceClient();
+    const voice = await voiceInstruction(admin, ref.user_id);
+
     const raw = await callClaude({
       system:
         "You refine a football coach's own session reflection by folding in the " +
@@ -55,7 +59,8 @@ Deno.serve(async (req) => {
         "Principle: MIRROR, NOT VERDICT — integrate ONLY what the coach actually " +
         "wrote, in their voice. Do not invent detail, judge, praise, criticise, " +
         "or add advice. Keep it concise and faithful. Return ONLY the enriched " +
-        "summary as plain text.",
+        "summary as plain text." +
+        voice,
       prompt: JSON.stringify({
         original_summary: ref.summary,
         what_went_well: ref.what_went_well,
@@ -67,7 +72,6 @@ Deno.serve(async (req) => {
 
     const enriched_summary = raw.trim();
 
-    const admin = serviceClient();
     const { error: upErr } = await admin
       .from("reflections")
       .update({ enriched_summary })

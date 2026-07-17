@@ -11,6 +11,7 @@
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -25,19 +26,24 @@ Deno.serve(async (req) => {
     if (error || !obs) return jsonResponse({ error: "Not found or not permitted" }, 403);
     if (!obs.raw_note) return jsonResponse({ error: "No raw_note to clean" }, 400);
 
+    const admin = serviceClient();
+    const voice = await voiceInstruction(admin, obs.user_id);
+
     const raw = await callClaude({
       system:
         "You are a reflective assistant for football coaches and players. " +
-        "Principle: MIRROR, NOT VERDICT. Restate the observation in clear, neutral " +
-        "language. Never add praise, criticism or judgement that wasn't in the note. " +
+        "Principle: MIRROR, NOT VERDICT. Tidy transcription slips and grammar, but " +
+        "KEEP the coach's own words and terminology — do NOT rewrite their phrasing " +
+        "into textbook language. Never add praise, criticism or judgement that " +
+        "wasn't in the note. " +
         'Return ONLY JSON: {"cleaned_note": string, "tags": string[], ' +
-        '"sentiment": "positive"|"concern"|"neutral", "phase_of_play": string|null}.',
+        '"sentiment": "positive"|"concern"|"neutral", "phase_of_play": string|null}.' +
+        voice,
       prompt: obs.raw_note,
     });
 
     const parsed = safeParse(raw);
 
-    const admin = serviceClient();
     // Try to attribute by shirt number via the event's team sheet.
     let player_id = obs.player_id;
     if (!player_id && obs.shirt_number != null) {

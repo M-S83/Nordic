@@ -105,6 +105,7 @@ alter table public.profiles            enable row level security;
 alter table public.teams               enable row level security;
 alter table public.players             enable row level security;
 alter table public.player_development_notes enable row level security;
+alter table public.coach_voice_profiles enable row level security;
 alter table public.competitions        enable row level security;
 alter table public.events              enable row level security;
 alter table public.event_attendance    enable row level security;
@@ -267,6 +268,23 @@ create policy "player_dev_notes: update own"
 create policy "player_dev_notes: delete own"
   on public.player_development_notes for delete
   using (user_id = auth.uid());
+
+-- =============================================================================
+-- COACH VOICE PROFILES  (each user owns their own)
+-- =============================================================================
+
+create policy "voice_profile: read own"
+  on public.coach_voice_profiles for select
+  using (user_id = auth.uid());
+
+create policy "voice_profile: insert own"
+  on public.coach_voice_profiles for insert
+  with check (user_id = auth.uid());
+
+create policy "voice_profile: update own"
+  on public.coach_voice_profiles for update
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
 
 -- =============================================================================
 -- EVENTS

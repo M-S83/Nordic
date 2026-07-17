@@ -10,6 +10,7 @@
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -66,6 +67,9 @@ Deno.serve(async (req) => {
       roster: sheetPlayers ?? [],
     });
 
+    const admin = serviceClient();
+    const voice = await voiceInstruction(admin, event.user_id);
+
     const raw = await callClaude({
       system:
         "You produce structured football coaching reflection reports. " +
@@ -77,7 +81,8 @@ Deno.serve(async (req) => {
         "(from their reflection) — do not invent your own recommendations. " +
         'Return ONLY JSON with keys: "headline" (string), "sections" (array of ' +
         '{heading, points: string[]}), "hoped_to_see" (array of {item, status, ' +
-        'note}), "patterns" (string[]), "suggested_next_focus" (string[]).',
+        'note}), "patterns" (string[]), "suggested_next_focus" (string[]).' +
+        voice,
       prompt: `Report type: ${report_type}\n\nData:\n${payload}`,
       maxTokens: 2048,
     });
@@ -85,7 +90,6 @@ Deno.serve(async (req) => {
     const content_json = safeParse(raw);
     const content_markdown = toMarkdown(title ?? event.title, content_json);
 
-    const admin = serviceClient();
     const { data: report, error: insErr } = await admin.from("reports").insert({
       event_id,
       created_by: event.user_id,

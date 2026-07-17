@@ -43,3 +43,6 @@ verify_jwt = true
 
 [functions.update-insights]
 verify_jwt = true
+
+[functions.update-voice-profile]
+verify_jwt = true

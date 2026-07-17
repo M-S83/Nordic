@@ -13,6 +13,7 @@
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { voiceInstruction } from "../_shared/voice.ts";
 
 interface ReviewItem {
   item: string;
@@ -29,7 +30,7 @@ Deno.serve(async (req) => {
 
     const supa = userClient(req);
     const { data: ref, error } = await supa
-      .from("reflections").select("id, event_id").eq("id", reflection_id).single();
+      .from("reflections").select("id, event_id, user_id").eq("id", reflection_id).single();
     if (error || !ref) return jsonResponse({ error: "Not found or not permitted" }, 403);
 
     // The event's up-front intent + the notes actually taken.
@@ -51,6 +52,9 @@ Deno.serve(async (req) => {
       tags: o.tags,
     }));
 
+    const admin = serviceClient();
+    const voice = await voiceInstruction(admin, ref.user_id);
+
     const raw = await callClaude({
       system:
         "You compare what a football coach hoped to see in a session against the " +
@@ -59,14 +63,14 @@ Deno.serve(async (req) => {
         "it well. For each hoped-for item return: item (verbatim), status " +
         '("showed_up" if a note clearly relates, "partly" if only loosely, ' +
         '"not_observed" if no note touches it), and evidence (quote/paraphrase ' +
-        "the relevant note, or empty if none). Return ONLY a JSON array.",
+        "the relevant note, or empty if none). Return ONLY a JSON array." +
+        voice,
       prompt: JSON.stringify({ hoping_to_see: hoping, notes }),
       maxTokens: 1024,
     });
 
     const review: ReviewItem[] = safeParse(raw);
 
-    const admin = serviceClient();
     await admin.from("reflections")
       .update({ hoped_to_see_review: review }).eq("id", reflection_id);
 

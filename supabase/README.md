@@ -31,7 +31,9 @@ supabase/
     review-intent/                 hoping_to_see vs notes → review + gap questions
     enrich-reflection/             Answers → reflection.enriched_summary
     generate-report/               Event → structured report (JSON + markdown)
+    generate-period-report/        Team + date range → weekly/monthly/season report
     update-insights/               Observations → long-term pattern insights
+    update-voice-profile/          Coach's own writing → learned voice profile
 types/database.ts                  TypeScript interfaces for the main objects
 ```
 
@@ -189,6 +191,21 @@ the team’s recurring-insight prompts inside the next reflection (skippable), s
 the long-term trend the notes have been telling **influences the reflection**.
 Mirror, not verdict throughout — it reflects the pattern back and asks; it never
 judges.
+
+### Adapting to each coach's voice
+The app learns how each coach writes and replies in *their* language, at *their*
+level — so it works for a grassroots volunteer and a UEFA-badged coach alike.
+`update-voice-profile` reads a coach's **own** raw notes and reflection
+transcripts and distils a `coach_voice_profiles` row: a `style_summary`, a
+`glossary` of the terms they actually use, and a `language_level` (plain /
+developing / technical — a read on their *language*, never their ability). A
+shared helper (`_shared/voice.ts`) turns that profile into a prompt instruction
+that every generating function appends, so `clean-observation`,
+`generate-reflection-questions`, `review-intent`, `enrich-reflection`,
+`generate-report` and `generate-period-report` all write back in the coach's
+voice. Notably, `clean-observation` now *preserves* the coach's own terminology
+rather than upgrading it to textbook language. This is "mirror, not verdict"
+taken all the way — the app mirrors not just what a coach saw, but how they say it.
 
 ## Security model (RLS)
 

@@ -239,6 +239,21 @@ create table public.players (
 
 create index players_team_id_idx on public.players (team_id);
 
+-- Coach voice profile: learned from the coach's OWN writing so every AI reply
+-- comes back in their language, at their level. One row per user. This is how
+-- "mirror, not verdict" extends to voice — the app adapts to whichever level of
+-- coaching experience, rather than imposing textbook jargon.
+create table public.coach_voice_profiles (
+  id             uuid primary key default gen_random_uuid(),
+  user_id        uuid not null unique references auth.users (id) on delete cascade,
+  style_summary  text,                     -- natural-language description of their voice
+  glossary       jsonb not null default '[]'::jsonb, -- characteristic terms/phrases they use
+  language_level text,                      -- 'plain' | 'developing' | 'technical' (language, not skill)
+  sample_count   int not null default 0,   -- how many of their notes it learned from
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+
 -- Player development notes: a running coaching log per player over time -------
 -- (strengths, areas to work on, targets) — separate from match observations.
 create table public.player_development_notes (
@@ -626,6 +641,10 @@ create trigger insights_set_updated_at
 
 create trigger player_development_notes_set_updated_at
   before update on public.player_development_notes
+  for each row execute function public.set_updated_at();
+
+create trigger coach_voice_profiles_set_updated_at
+  before update on public.coach_voice_profiles
   for each row execute function public.set_updated_at();
 
 -- =============================================================================

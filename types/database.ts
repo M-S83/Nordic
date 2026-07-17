@@ -139,6 +139,18 @@ export interface Competition {
   created_at: string;
 }
 
+// Learned from the coach's own writing; every AI reply is written through it.
+export interface CoachVoiceProfile {
+  id: string;
+  user_id: string;
+  style_summary: string | null;
+  glossary: string[]; // characteristic terms/phrases the coach uses
+  language_level: string | null; // 'plain' | 'developing' | 'technical' (language, not skill)
+  sample_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PlayerDevelopmentNote {
   id: string;
   player_id: string;
