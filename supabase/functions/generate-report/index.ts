@@ -73,6 +73,8 @@ Deno.serve(async (req) => {
         "patterns; do not grade or judge. Include a \"hoped_to_see\" section that " +
         "reflects each thing the coach hoped to see back against the notes " +
         "(what showed up, and what wasn't observed — plainly, no judgement). " +
+        "For next-focus items, reflect back what the COACH noted for next time " +
+        "(from their reflection) — do not invent your own recommendations. " +
         'Return ONLY JSON with keys: "headline" (string), "sections" (array of ' +
         '{heading, points: string[]}), "hoped_to_see" (array of {item, status, ' +
         'note}), "patterns" (string[]), "suggested_next_focus" (string[]).',
@@ -129,7 +131,7 @@ function toMarkdown(title: string, c: any): string {
     for (const p of c.patterns) lines.push(`- ${p}`);
   }
   if (c.suggested_next_focus?.length) {
-    lines.push(`\n## Suggested next focus`);
+    lines.push(`\n## Noted for next`);
     for (const p of c.suggested_next_focus) lines.push(`- ${p}`);
   }
   return lines.join("\n");
