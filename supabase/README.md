@@ -47,7 +47,13 @@ types/database.ts                  TypeScript interfaces for the main objects
 ../docs/coaching-knowledge.md      Coachcast pedagogy that grounds the reflection prompts + tags
 ```
 
-## Quick start
+## Going live
+
+To stand up a real, hosted backend (Supabase project + functions + secrets) so
+you can start using the app, follow **`docs/deploy.md`** — it's a ~15-minute
+copy-paste runbook (`scripts/deploy.sh` does the heavy lifting).
+
+## Quick start (local)
 
 ```bash
 supabase start          # boots local Postgres, Auth, Storage, etc.
