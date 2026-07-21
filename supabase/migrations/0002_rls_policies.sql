@@ -447,10 +447,11 @@ create policy "reports: insert via event or team access"
     created_by = auth.uid()
     and (
       (event_id is not null and public.can_access_event(event_id))          -- per-event report
-      or (event_id is null and team_id is not null and exists (             -- period report
+      or (event_id is null and team_id is not null and exists (             -- team period report
         select 1 from public.teams t
         where t.id = reports.team_id and public.is_club_staff(t.club_id)
       ))
+      or (event_id is null and team_id is null)                            -- personal (player) period summary
     )
   );
 

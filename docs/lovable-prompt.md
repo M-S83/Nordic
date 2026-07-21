@@ -54,6 +54,10 @@ Functions in `../supabase`).
 >   point, always offered), and (3) gets a **player report** whose focus-for-next
 >   is drawn from **their own answers**. Never editorialise or add analysis they
 >   didn't raise. A player only sees their own data; a coach never sees it.
+>   Over time the player also gets **weekly / monthly / season summaries of their
+>   own reflections** via `generate-player-summary` (their equivalent of the
+>   coach's period reports) — the story of what keeps showing, what they keep
+>   working on, and what's shifted — private to them.
 > - **Coach-developer Mode** — create `coach_observation` events to observe and
 >   support coaches; record `coach_developer` reflections; their insights track
 >   coach development over time.

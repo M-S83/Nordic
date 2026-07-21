@@ -96,6 +96,13 @@ construction: `player` reflections are visible only to their author, and a coach
 never sees them (nor the player the coach's world). Coach and player reflection
 are two separate, self-contained loops.
 
+Over time a player builds a **story of their reflections**, just like the coach's
+period reports: `generate-player-summary` aggregates the player's **own**
+reflections across a week / month / season into a personal summary — what keeps
+showing in their game, what they keep working on, what's shifted, and the focus
+they keep returning to — grounded only in what they wrote, in their voice, and
+private to them (a `reports` row with `event_id` and `team_id` both null).
+
 ### Coach-developer Mode
 A coach developer supports and observes coaches. They create `coach_observation`
 events, record `coach_developer` reflections, and their insights are typed
