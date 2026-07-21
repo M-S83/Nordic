@@ -58,9 +58,10 @@ export interface PlayerGameLog {
   created_at: string;
 }
 
+// A player either started or came off the bench. "Game changer" is the positive
+// framing for the latter (used instead of "sub" / "came on").
 export const ROLES: { value: PlayerMatchRole; label: string }[] = [
   { value: "started", label: "Started" },
-  { value: "substitute", label: "Came on" },
   { value: "game_changer", label: "Game changer" },
 ];
 export const HOME_AWAY: { value: HomeAway; label: string }[] = [

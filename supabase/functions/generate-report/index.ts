@@ -109,8 +109,10 @@ Deno.serve(async (req) => {
             "Draw the next-focus points from THEIR answers to the reflective " +
             "questions (reflective_qa) — not your own ideas. Do not add tactical " +
             "analysis they didn't raise. You may accurately reference their game " +
-            "context from player_game (position(s), whether they started or came " +
-            "on as a game-changer, the result) but never invent stats. "
+            "context from player_game (position(s), whether they started or " +
+            "featured as a game changer, the result) but never invent stats. If " +
+            "they came off the bench, call it a \"game changer\" (their word for " +
+            "it) — never \"sub\" or \"came on\". "
           : "Include a \"hoped_to_see\" section that reflects each thing the coach " +
             "hoped to see back against the notes (what showed up, and what wasn't " +
             "observed — plainly). For next-focus items, reflect back what the " +
