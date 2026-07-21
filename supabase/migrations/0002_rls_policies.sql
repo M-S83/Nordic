@@ -114,6 +114,7 @@ alter table public.match_stats         enable row level security;
 alter table public.team_sheets         enable row level security;
 alter table public.team_sheet_players  enable row level security;
 alter table public.observations        enable row level security;
+alter table public.player_game_log     enable row level security;
 alter table public.reflections         enable row level security;
 alter table public.followup_questions  enable row level security;
 alter table public.followup_answers    enable row level security;
@@ -368,6 +369,15 @@ create policy "match_stats: access via event"
   on public.match_stats for all
   using (public.can_access_event(event_id))
   with check (public.can_access_event(event_id));
+
+-- =============================================================================
+-- PLAYER GAME LOG  (Player Mode) — private to the player who logged it.
+-- =============================================================================
+
+create policy "player_game_log: own only"
+  on public.player_game_log for all
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
 
 -- =============================================================================
 -- REFLECTIONS

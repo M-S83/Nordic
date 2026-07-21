@@ -334,3 +334,13 @@ values (
   '["Stay switched on in the closing spell"]'::jsonb
 )
 on conflict (id) do nothing;
+
+-- The player's own game log for that reflection (position, role, match details).
+insert into public.player_game_log
+  (event_id, user_id, positions, role, home_away, opposition,
+   goals_for, goals_against, minutes_played, my_goals, my_assists)
+values (
+  :'player_event_id', :'player_user_id', array['CM'], 'started', 'away', 'Riverside U15',
+  1, 2, 90, 0, 1
+)
+on conflict (event_id) do nothing;

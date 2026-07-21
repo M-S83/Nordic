@@ -93,6 +93,14 @@ create type home_away as enum (
   'neutral'
 );
 
+-- How a player featured in their own game (Player Mode self-log).
+--   game_changer = came off the bench and changed the game.
+create type player_match_role as enum (
+  'started',
+  'substitute',
+  'game_changer'
+);
+
 create type team_sheet_source as enum (
   'image',
   'pdf',
@@ -447,6 +455,39 @@ create table public.match_stats (
 
 create index match_stats_event_id_idx on public.match_stats (event_id);
 create index match_stats_player_id_idx on public.match_stats (player_id);
+
+-- =============================================================================
+-- PLAYER GAME LOG  (Player Mode) — the player's OWN record of their game,
+-- logged with their reflection and independent of any coach data: the
+-- position(s) they played, whether they started or changed the game, and the
+-- match details. Private to the player.
+-- =============================================================================
+
+create table public.player_game_log (
+  id             uuid primary key default gen_random_uuid(),
+  event_id       uuid not null unique references public.events (id) on delete cascade,
+  user_id        uuid not null references auth.users (id) on delete cascade,
+  positions      text[] not null default '{}',   -- position(s) they played, e.g. {CM, LW}
+  role           player_match_role,               -- started / substitute / game_changer
+  home_away      home_away,
+  opposition     text,
+  goals_for      int,
+  goals_against  int,
+  result         match_result generated always as (
+                    case
+                      when goals_for is null or goals_against is null then null::match_result
+                      when goals_for > goals_against then 'win'::match_result
+                      when goals_for < goals_against then 'loss'::match_result
+                      else 'draw'::match_result
+                    end
+                  ) stored,
+  minutes_played int,
+  my_goals       int not null default 0,
+  my_assists     int not null default 0,
+  created_at     timestamptz not null default now()
+);
+
+create index player_game_log_user_id_idx on public.player_game_log (user_id);
 
 -- =============================================================================
 -- POST-EVENT REFLECTIONS

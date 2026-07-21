@@ -54,6 +54,10 @@ Deno.serve(async (req) => {
         (q.followup_answers ?? [])[0]?.selected_option ?? null,
     })).filter((x) => x.answer);
 
+    // Player Mode: the player's own game context (position/role/result).
+    const { data: playerGame } = await supa
+      .from("player_game_log").select("*").eq("event_id", event_id).maybeSingle();
+
     const payload = JSON.stringify({
       event: {
         type: event.event_type, title: event.title, date: event.event_date,
@@ -77,6 +81,8 @@ Deno.serve(async (req) => {
         : null,
       // The reflective questions and the person's own answers.
       reflective_qa,
+      // Player Mode game context (position(s), role, match details) — null otherwise.
+      player_game: playerGame ?? null,
       // Included for match reports (null/empty for training).
       match_result: matchDetails ?? null,
       match_stats: matchStats ?? [],
@@ -102,7 +108,9 @@ Deno.serve(async (req) => {
             "and first/second person. Lead with their own account of the game. " +
             "Draw the next-focus points from THEIR answers to the reflective " +
             "questions (reflective_qa) — not your own ideas. Do not add tactical " +
-            "analysis they didn't raise. "
+            "analysis they didn't raise. You may accurately reference their game " +
+            "context from player_game (position(s), whether they started or came " +
+            "on as a game-changer, the result) but never invent stats. "
           : "Include a \"hoped_to_see\" section that reflects each thing the coach " +
             "hoped to see back against the notes (what showed up, and what wasn't " +
             "observed — plainly). For next-focus items, reflect back what the " +

@@ -89,7 +89,11 @@ reflective questions grounded in what they wrote** (for a player these are the
 point, always offered — not just a brevity nudge); and the report's focus-for-next
 is **drawn from the player's own answers**, never invented. `generate-report`
 restates only what the player actually said — it never adds a characterisation of
-the game they didn't make. It runs on the same primitives as Coach Mode
+the game they didn't make. Alongside the reflection the player logs their own
+**game context** in `player_game_log` (independent of any coach data): the
+position(s) they played, whether they `started` / were a `substitute` / a
+`game_changer`, and the match details (home/away, score with a generated
+win/draw/loss `result`, minutes, their goals/assists). Private to them. It runs on the same primitives as Coach Mode
 (reflections, follow-ups, reports, voice profile, insights) — no extra tables. Because
 the player owns their event and reflection, ownership RLS makes it private by
 construction: `player` reflections are visible only to their author, and a coach

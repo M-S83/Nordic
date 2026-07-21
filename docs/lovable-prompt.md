@@ -49,7 +49,10 @@ Functions in `../supabase`).
 > - **Player Mode** — a self-contained, **independent** reflection space (no
 >   coach/roster link). It's personal and question-led: the player (1) writes or
 >   dictates **what the game was like for them** (their own account, in their
->   words), (2) answers a few **open reflective questions** the app draws from
+>   words) and logs their own **game context** in `player_game_log` — position(s)
+>   played, whether they `started` / `substitute` / `game_changer`, and match
+>   details (home/away, score → generated result, minutes, their goals/assists);
+>   (2) answers a few **open reflective questions** the app draws from
 >   what they wrote (`generate-reflection-questions` — for a player these are the
 >   point, always offered), and (3) gets a **player report** whose focus-for-next
 >   is drawn from **their own answers**. Never editorialise or add analysis they

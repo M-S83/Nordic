@@ -44,6 +44,9 @@ export type CompetitionKind = "league" | "cup";
 
 export type HomeAway = "home" | "away" | "neutral";
 
+// How a player featured in their own game (Player Mode self-log).
+export type PlayerMatchRole = "started" | "substitute" | "game_changer";
+
 export type TeamSheetSource = "image" | "pdf" | "manual";
 
 export type ProcessingStatus = "pending" | "processing" | "completed" | "failed";
@@ -233,6 +236,24 @@ export interface MatchStats {
   red_cards: number;
   clean_sheet: boolean;
   minutes_played: number | null;
+  created_at: string;
+}
+
+// Player Mode: the player's own record of a game, logged with their reflection.
+export interface PlayerGameLog {
+  id: string;
+  event_id: string;
+  user_id: string;
+  positions: string[]; // position(s) they played, e.g. ['CM','LW']
+  role: PlayerMatchRole | null; // started / substitute / game_changer
+  home_away: HomeAway | null;
+  opposition: string | null;
+  goals_for: number | null;
+  goals_against: number | null;
+  result: MatchResult | null; // generated from the score
+  minutes_played: number | null;
+  my_goals: number;
+  my_assists: number;
   created_at: string;
 }
 
