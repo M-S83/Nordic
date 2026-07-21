@@ -1,7 +1,8 @@
 import { supabase } from "./supabase";
 import type {
-  Club, EventRow, EventType, FollowupQuestion, HomeAway, Observation,
-  Player, PlayerGameLog, PlayerMatchRole, Reflection, Report, TeamFormat, CapturePhase,
+  AttendanceStatus, Club, EventRow, EventType, FollowupQuestion, HomeAway, MatchDetails, MatchStat,
+  Observation, Player, PlayerGameLog, PlayerMatchRole, Reflection, Report, SquadSelection,
+  TeamFormat, CapturePhase,
 } from "./types";
 
 async function uid(): Promise<string> {
@@ -104,6 +105,62 @@ export async function getEvent(id: string): Promise<EventRow> {
   const { data, error } = await supabase.from("events").select("*").eq("id", id).single();
   if (error) throw error;
   return data as EventRow;
+}
+
+// ---- Squad, attendance & match record ---------------------------------------
+export interface SquadRow {
+  player: Player;
+  status: AttendanceStatus | null;
+  selection: SquadSelection | null;
+}
+
+export async function squad(eventId: string, teamId: string): Promise<SquadRow[]> {
+  const [pl, att] = await Promise.all([
+    players(teamId),
+    supabase.from("event_attendance").select("player_id, status, selection").eq("event_id", eventId),
+  ]);
+  const by = new Map((att.data ?? []).map((a: any) => [a.player_id, a]));
+  return pl.map((p) => ({
+    player: p,
+    status: by.get(p.id)?.status ?? null,
+    selection: by.get(p.id)?.selection ?? null,
+  }));
+}
+
+export async function setAttendance(
+  eventId: string, playerId: string, status: AttendanceStatus, selection: SquadSelection | null,
+): Promise<void> {
+  const { error } = await supabase.from("event_attendance")
+    .upsert({ event_id: eventId, player_id: playerId, status, selection }, { onConflict: "event_id,player_id" });
+  if (error) throw error;
+}
+
+export async function getMatchDetails(eventId: string): Promise<MatchDetails | null> {
+  const { data, error } = await supabase.from("match_details").select("*").eq("event_id", eventId).maybeSingle();
+  if (error) throw error;
+  return (data as MatchDetails) ?? null;
+}
+
+export async function saveMatchDetails(d: MatchDetails): Promise<void> {
+  const { error } = await supabase.from("match_details").upsert({
+    event_id: d.event_id, home_away: d.home_away, formation: d.formation,
+    goals_for: d.goals_for, goals_against: d.goals_against, man_of_the_match: d.man_of_the_match,
+  }, { onConflict: "event_id" });
+  if (error) throw error;
+}
+
+export async function getMatchStats(eventId: string): Promise<MatchStat[]> {
+  const { data, error } = await supabase.from("match_stats").select("*").eq("event_id", eventId);
+  if (error) throw error;
+  return (data ?? []) as MatchStat[];
+}
+
+export async function setMatchStat(s: MatchStat): Promise<void> {
+  const { error } = await supabase.from("match_stats").upsert({
+    event_id: s.event_id, player_id: s.player_id, goals: s.goals, assists: s.assists,
+    yellow_cards: s.yellow_cards, red_cards: s.red_cards, clean_sheet: s.clean_sheet,
+  }, { onConflict: "event_id,player_id" });
+  if (error) throw error;
 }
 
 // ---- Observations (notes) ---------------------------------------------------

@@ -8,14 +8,16 @@ import type { EventRow, FollowupQuestion, Observation, Reflection, Report } from
 import { PHASES, type CapturePhase } from "../lib/types";
 import { ErrorText, Loading, Markdown, Spinner, TopBar } from "../components/ui";
 import { RecordButton } from "../components/RecordButton";
+import { CoachSquad } from "./CoachSquad";
+import { CoachResult } from "./CoachResult";
 
-type Section = "notes" | "reflect" | "report";
+type Section = "squad" | "result" | "notes" | "reflect" | "report";
 
 export default function EventDetail() {
   const { eventId } = useParams();
   const nav = useNavigate();
   const [ev, setEv] = useState<EventRow | null>(null);
-  const [section, setSection] = useState<Section>("notes");
+  const [section, setSection] = useState<Section>("squad");
   const [err, setErr] = useState("");
 
   useEffect(() => {
@@ -25,6 +27,15 @@ export default function EventDetail() {
   if (!eventId) return null;
   if (err) return <div className="app"><div className="screen"><ErrorText>{err}</ErrorText></div></div>;
   if (!ev) return <Loading />;
+
+  const isMatch = ev.event_type === "match" || ev.event_type === "tournament";
+  const tabs: { key: Section; label: string }[] = [
+    { key: "squad", label: isMatch ? "Squad" : "Attendance" },
+    ...(isMatch ? [{ key: "result" as Section, label: "Result" }] : []),
+    { key: "notes", label: "Notes" },
+    { key: "reflect", label: "Reflect" },
+    { key: "report", label: "Report" },
+  ];
 
   return (
     <div className="app">
@@ -44,13 +55,17 @@ export default function EventDetail() {
         )}
 
         <div className="chipset">
-          {(["notes", "reflect", "report"] as Section[]).map((s) => (
-            <button key={s} className={`chip ${section === s ? "on" : ""}`} onClick={() => setSection(s)}>
-              {s === "notes" ? "Notes" : s === "reflect" ? "Reflect" : "Report"}
+          {tabs.map((t) => (
+            <button key={t.key} className={`chip ${section === t.key ? "on" : ""}`} onClick={() => setSection(t.key)}>
+              {t.label}
             </button>
           ))}
         </div>
 
+        {section === "squad" && (ev.team_id
+          ? <CoachSquad eventId={eventId} teamId={ev.team_id} isMatch={isMatch} />
+          : <div className="card muted">This event has no team attached.</div>)}
+        {section === "result" && ev.team_id && <CoachResult eventId={eventId} teamId={ev.team_id} />}
         {section === "notes" && <Notes eventId={eventId} teamId={ev.team_id} />}
         {section === "reflect" && <Reflect eventId={eventId} />}
         {section === "report" && <ReportSection ev={ev} />}

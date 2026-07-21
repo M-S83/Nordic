@@ -12,6 +12,35 @@ export interface Player {
   id: string; team_id: string | null; display_name: string | null;
   first_name: string | null; last_name: string | null; shirt_number: number | null; position: string | null;
 }
+export type AttendanceStatus = "present" | "absent" | "injured" | "unavailable";
+export type SquadSelection = "starter" | "substitute" | "unused_substitute";
+
+export interface EventAttendance {
+  id?: string; event_id: string; player_id: string;
+  status: AttendanceStatus; selection: SquadSelection | null; position: string | null;
+}
+export interface MatchDetails {
+  id?: string; event_id: string; home_away: HomeAway | null; formation: string | null;
+  goals_for: number; goals_against: number; result?: MatchResult; man_of_the_match: string | null; notes: string | null;
+}
+export interface MatchStat {
+  id?: string; event_id: string; player_id: string;
+  goals: number; assists: number; yellow_cards: number; red_cards: number;
+  clean_sheet: boolean; minutes_played: number | null;
+}
+
+export const ATTEND: { value: AttendanceStatus; label: string }[] = [
+  { value: "present", label: "Here" },
+  { value: "absent", label: "Absent" },
+  { value: "injured", label: "Injured" },
+];
+// "Game changer" is the positive framing for a substitute (the coach's word for it).
+export const SELECT: { value: SquadSelection; label: string }[] = [
+  { value: "starter", label: "Starter" },
+  { value: "substitute", label: "Game changer" },
+  { value: "unused_substitute", label: "Unused" },
+];
+
 export interface EventRow {
   id: string; team_id: string | null; club_id: string | null; event_type: EventType;
   title: string; event_date: string | null; opposition: string | null;
