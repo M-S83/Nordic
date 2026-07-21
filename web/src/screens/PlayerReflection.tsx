@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  answerQuestion, enrich, generatePlayerReport, generateQuestions, getEvent, getPlayerGame,
+  answerQuestion, answerQuestionVoice, enrich, generatePlayerReport, generateQuestions, getEvent, getPlayerGame,
   getReflection, questions, reports, saveTextReflection, saveVoiceReflection,
 } from "../lib/db";
 import type { EventRow, FollowupQuestion, PlayerGameLog, Reflection, Report } from "../lib/types";
@@ -17,9 +17,16 @@ export default function PlayerReflection() {
   const [text, setText] = useState("");
   const [qs, setQs] = useState<FollowupQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [voiced, setVoiced] = useState<Set<string>>(new Set());
   const [reportList, setReportList] = useState<Report[]>([]);
   const [busy, setBusy] = useState("");
   const [err, setErr] = useState("");
+
+  const voiceAnswer = async (qid: string, blob: Blob) => {
+    setErr("");
+    try { await answerQuestionVoice(qid, blob); setVoiced((v) => new Set(v).add(qid)); }
+    catch (e) { setErr((e as Error).message); }
+  };
 
   const load = useCallback(async () => {
     if (!eventId) return;
@@ -56,7 +63,7 @@ export default function PlayerReflection() {
     if (!ref) return;
     setBusy("enrich"); setErr("");
     try {
-      for (const q of qs) { const a = answers[q.id]?.trim(); if (a) await answerQuestion(q.id, a); }
+      for (const q of qs) { const a = answers[q.id]?.trim(); if (a && !voiced.has(q.id)) await answerQuestion(q.id, a); }
       await enrich(ref.id); await load();
     } catch (e) { setErr((e as Error).message); } finally { setBusy(""); }
   };
@@ -116,12 +123,17 @@ export default function PlayerReflection() {
               </button>
             </div>
             <p className="muted small">Open questions from your own account, including anything your coach
-              said to you, and what you made of it. All optional.</p>
+              said to you, and what you made of it. Answer by voice or text, or skip.</p>
             {qs.map((q) => (
               <div key={q.id} className="field">
                 <label>{q.question_text}</label>
-                <input value={answers[q.id] ?? ""} onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                  placeholder="Optional…" />
+                <div className="row" style={{ gap: 8, alignItems: "flex-start" }}>
+                  <input style={{ flex: 1 }}
+                    value={answers[q.id] ?? ""}
+                    onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                    placeholder={voiced.has(q.id) ? "Saved by voice ✓" : "Type your answer…"} />
+                  <RecordButton compact onComplete={(b) => voiceAnswer(q.id, b)} />
+                </div>
               </div>
             ))}
             {qs.length > 0 && (

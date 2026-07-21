@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
-  addTextNote, addVoiceNote, answerQuestion, enrich, generateQuestions, generateReport,
+  addTextNote, addVoiceNote, answerQuestion, answerQuestionVoice, enrich, generateQuestions, generateReport,
   getEvent, getReflection, observations, questions, reports, saveTextReflection, saveVoiceReflection,
 } from "../lib/db";
 import type { EventRow, FollowupQuestion, Observation, Reflection, Report } from "../lib/types";
@@ -139,6 +139,7 @@ function Reflect({ eventId }: { eventId: string }) {
   const [text, setText] = useState("");
   const [qs, setQs] = useState<FollowupQuestion[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [voiced, setVoiced] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState<string>("");
   const [err, setErr] = useState("");
 
@@ -149,6 +150,12 @@ function Reflect({ eventId }: { eventId: string }) {
       if (r) { setText(r.raw_transcript ?? ""); setQs(await questions(r.id)); }
     } catch (e) { setErr((e as Error).message); }
   }, [eventId]);
+
+  const voiceAnswer = async (qid: string, blob: Blob) => {
+    setErr("");
+    try { await answerQuestionVoice(qid, blob); setVoiced((v) => new Set(v).add(qid)); }
+    catch (e) { setErr((e as Error).message); }
+  };
   useEffect(() => { load(); }, [load]);
 
   const save = async () => {
@@ -179,7 +186,7 @@ function Reflect({ eventId }: { eventId: string }) {
     try {
       for (const q of qs) {
         const a = answers[q.id]?.trim();
-        if (a) await answerQuestion(q.id, a);
+        if (a && !voiced.has(q.id)) await answerQuestion(q.id, a);
       }
       await enrich(ref.id);
       await load();
@@ -222,12 +229,18 @@ function Reflect({ eventId }: { eventId: string }) {
               {busy === "questions" ? <Spinner /> : qs.length ? "Refresh questions" : "Ask me questions"}
             </button>
           </div>
-          <p className="muted small">Optional, skippable prompts to add a little context where it's thin.</p>
+          <p className="muted small">Optional, skippable prompts to add a little context where it's thin.
+            Answer by voice or text.</p>
           {qs.map((q) => (
             <div key={q.id} className="field">
               <label>{q.question_text}</label>
-              <input value={answers[q.id] ?? ""} onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
-                placeholder="Optional…" />
+              <div className="row" style={{ gap: 8, alignItems: "flex-start" }}>
+                <input style={{ flex: 1 }}
+                  value={answers[q.id] ?? ""}
+                  onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+                  placeholder={voiced.has(q.id) ? "Saved by voice ✓" : "Type your answer…"} />
+                <RecordButton compact onComplete={(b) => voiceAnswer(q.id, b)} />
+              </div>
             </div>
           ))}
           {qs.length > 0 && (

@@ -231,6 +231,20 @@ export async function answerQuestion(questionId: string, text: string): Promise<
   if (error) throw error;
 }
 
+// Answer a follow-up question by voice: upload, save, transcribe to answer_text.
+export async function answerQuestionVoice(questionId: string, blob: Blob): Promise<void> {
+  const me = await uid();
+  const path = `${me}/answers/${crypto.randomUUID()}.webm`;
+  const up = await supabase.storage.from("audio-recordings").upload(path, blob, { contentType: "audio/webm" });
+  if (up.error) throw up.error;
+  const { data, error } = await supabase
+    .from("followup_answers").insert({ question_id: questionId, audio_path: path }).select("id").single();
+  if (error) throw error;
+  await supabase.functions.invoke("transcribe-audio", {
+    body: { bucket: "audio-recordings", audio_path: path, target: "answer", target_id: (data as { id: string }).id },
+  });
+}
+
 export async function enrich(reflectionId: string): Promise<void> {
   await supabase.functions.invoke("enrich-reflection", { body: { reflection_id: reflectionId } });
 }
