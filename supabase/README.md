@@ -23,9 +23,10 @@ supabase/
     0003_storage_buckets.sql       Buckets + storage.objects policies
     0004_usage_analytics.sql       usage_events + analytics views + plans/subscriptions
     0005_continuous_learning.sql   learning_state + learning_runs + due/clear + triggers
+    0006_coaching_knowledge.sql    frameworks + reflective prompt bank + tag taxonomy (grounding)
   seed.sql                         Example data (club, team, players, events…)
   functions/
-    _shared/                       CORS + Supabase/Claude client helpers (models, pricing, usage logging)
+    _shared/                       CORS + Supabase/Claude client helpers (models, pricing, usage logging, knowledge base)
     transcribe-audio/              Audio → transcript (+ logs Whisper cost)
     process-team-sheet/            Team sheet → extracted players
     clean-observation/             Raw note → cleaned note + tags + sentiment
@@ -43,6 +44,7 @@ types/database.ts                  TypeScript interfaces for the main objects
 ../docs/cost-model.md              Cost-to-run per user (week/month/season) + levers
 ../docs/analytics.md               Usage analytics + monetisation reference
 ../docs/continuous-learning.md     How the app learns from itself, continuously
+../docs/coaching-knowledge.md      Coachcast pedagogy that grounds the reflection prompts + tags
 ```
 
 ## Quick start
@@ -249,6 +251,17 @@ that every generating function appends, so `clean-observation`,
 voice. Notably, `clean-observation` now *preserves* the coach's own terminology
 rather than upgrading it to textbook language. This is "mirror, not verdict"
 taken all the way — the app mirrors not just what a coach saw, but how they say it.
+
+### Grounded in real coaching pedagogy
+The reflection isn't generic. Migration `0006` seeds a curated knowledge base
+distilled from England Football's *Coachcast* (paraphrased, non-verbatim): ~50
+coaching **frameworks**, a grouped bank of open **reflective prompts** (plus a
+10-10-10 cadence), and a canonical **tag taxonomy**. `generate-reflection-questions`
+draws coach nudges from the prompt bank (re-voiced through the coach's own voice
+profile, still only where the reflection is thin), and `clean-observation` snaps
+note tags to the taxonomy so trend detection speaks one consistent coaching
+language. Reference data: every coach reads it, only an admin edits it. Detail in
+`docs/coaching-knowledge.md`.
 
 ### Learning from itself, continuously
 The app improves from its own accumulating data without being asked. It learns a

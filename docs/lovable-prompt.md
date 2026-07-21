@@ -134,6 +134,12 @@ Functions in `../supabase`).
 >    detailed, show none. Answers can also be text or voice. When the coach adds
 >    any context, call `enrich-reflection` to fold it back into the reflection
 >    (shown as `enriched_summary`); skipping is always fine and changes nothing.
+>    The nudge questions are grounded in a curated England-Football coach-reflection
+>    bank (`reflection_prompts`) yet re-voiced to the coach — you don't build these,
+>    the function does. Optionally offer the **10-10-10 cadence**: the three
+>    `reflection_prompts` rows where `cadence` is set (`10m`/`10h`/`10d`) can be
+>    scheduled as light reflection touch-points 10 minutes, 10 hours and 10 days
+>    after an event.
 > 5b. **What you hoped to see** — call `review-intent`, then show each
 >    `hoping_to_see` item with a ✓ showed_up / ~ partly / ✗ not_observed status
 >    and its evidence note (`reflections.hoped_to_see_review`). Each not-observed

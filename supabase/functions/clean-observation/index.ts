@@ -12,6 +12,7 @@
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
+import { canonicalTags } from "../_shared/knowledge.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -29,6 +30,14 @@ Deno.serve(async (req) => {
     const admin = serviceClient();
     const voice = await voiceInstruction(admin, obs.user_id);
 
+    // Snap tags to the canonical coaching taxonomy so trends/insights speak one
+    // consistent language instead of drifting synonyms.
+    const tags = await canonicalTags(admin);
+    const tagHint = tags.length
+      ? "When tagging, PREFER these canonical coaching tags where one fits (add a " +
+        "specific extra tag only if none apply): " + tags.join(", ") + ". "
+      : "";
+
     const raw = await callClaude({
       system:
         "You are a reflective assistant for football coaches and players. " +
@@ -36,6 +45,7 @@ Deno.serve(async (req) => {
         "KEEP the coach's own words and terminology — do NOT rewrite their phrasing " +
         "into textbook language. Never add praise, criticism or judgement that " +
         "wasn't in the note. " +
+        tagHint +
         'Return ONLY JSON: {"cleaned_note": string, "tags": string[], ' +
         '"sentiment": "positive"|"concern"|"neutral", "phase_of_play": string|null}.' +
         voice,

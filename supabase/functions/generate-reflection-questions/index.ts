@@ -13,6 +13,7 @@
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
 import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
+import { reflectionGrounding } from "../_shared/knowledge.ts";
 
 interface GeneratedQuestion {
   question_text: string;
@@ -53,6 +54,12 @@ Deno.serve(async (req) => {
       .from("followup_questions").select("question_type, skipped").limit(300);
     const engagementHint = buildEngagementHint(qHistory ?? []);
 
+    // Ground coach nudges in the curated reflective-prompt bank (players already
+    // get their own open questions, so no coach-prompt grounding for them).
+    const grounding = ref.reflection_type === "player"
+      ? ""
+      : await reflectionGrounding(admin, reflection_id);
+
     // Players and coaches get a different kind of question.
     //  • Player: open reflective questions ARE the point — always offer a few,
     //    grounded in what they wrote, to help them think it through.
@@ -87,6 +94,7 @@ Deno.serve(async (req) => {
     const raw = await callClaude({
       system:
         (ref.reflection_type === "player" ? playerSystem : coachSystem) +
+        grounding +
         engagementHint +
         'Return ONLY a JSON array of objects with keys: question_text (string), ' +
         'question_type ("text"|"voice"|"multiple_choice"|"rating"), options ' +

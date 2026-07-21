@@ -480,6 +480,31 @@ export interface Subscription {
   updated_at: string;
 }
 
+// ---- Coaching knowledge base (reference data) -------------------------------
+
+// A named coaching model/framework (Four Corners, STEP, the £10 challenge, …).
+export interface CoachingFramework {
+  id: string;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+// A curated open reflective prompt. `cadence` is set ('10m'|'10h'|'10d') only for
+// the 10-10-10 scheduled-reflection prompts; null for the in-reflection bank.
+export interface ReflectionPrompt {
+  id: string;
+  group_name: string; // 'Self-awareness', 'Communication & language', ...
+  prompt: string;
+  cadence: "10m" | "10h" | "10d" | null;
+  created_at: string;
+}
+
+// A canonical observation tag (the taxonomy note-cleaning snaps to).
+export interface CoachingTag {
+  tag: string;
+}
+
 // ---- Storage bucket names ---------------------------------------------------
 
 export const BUCKETS = {
