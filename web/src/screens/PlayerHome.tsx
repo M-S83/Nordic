@@ -27,7 +27,7 @@ export default function PlayerHome() {
         right={<div className="row" style={{ gap: 6 }}><ModeSwitch /><button className="btn ghost sm" onClick={() => signOut()}>Sign out</button></div>}
       />
       <div className="screen stack">
-        <div className="banner">Your reflections are private — just for you. No coach or club sees them.</div>
+        <div className="banner">Your reflections are private, just for you. No coach or club sees them.</div>
 
         <button className="btn block" onClick={() => nav("/player/log")}>+ Log a game</button>
 
@@ -39,7 +39,7 @@ export default function PlayerHome() {
           </div>
           <ErrorText>{err}</ErrorText>
           {games === null ? <Loading /> : games.length === 0 ? (
-            <div className="card muted">Nothing yet. Log your first game — how it went, where you played —
+            <div className="card muted">Nothing yet. Log your first game: how it went and where you played,
               then reflect on it in your own words.</div>
           ) : (
             <div className="list">
@@ -52,7 +52,7 @@ export default function PlayerHome() {
                   </div>
                   <div className="muted small row" style={{ gap: 8, marginTop: 4 }}>
                     {g.positions?.length > 0 && <span>{g.positions.join(", ")}</span>}
-                    {g.goals_for != null && g.goals_against != null && <span>· {g.goals_for}–{g.goals_against}</span>}
+                    {g.goals_for != null && g.goals_against != null && <span>· {g.goals_for}-{g.goals_against}</span>}
                     {g.events?.event_date && <span>· {fmtDate(g.events.event_date)}</span>}
                   </div>
                 </button>

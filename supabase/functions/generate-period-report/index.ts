@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       : report_type === "weekly_report"
       ? "Weekly"
       : "Monthly";
-    const heading = title ?? `${team.name} — ${periodLabel} Report`;
+    const heading = title ?? `${team.name}: ${periodLabel} Report`;
     const content_markdown = toMarkdown(heading, record, content_json);
 
     const { data: report, error: insErr } = await admin.from("reports").insert({
@@ -181,7 +181,7 @@ function toMarkdown(title: string, record: any, c: any): string {
   if (c.headline) lines.push(`\n_${c.headline}_`);
   lines.push(
     `\n**Record:** ${record.wins}W ${record.draws}D ${record.losses}L ` +
-    `· ${record.gf}–${record.ga} goals`,
+    `· ${record.gf}-${record.ga} goals`,
   );
   if (c.results_summary) lines.push(`\n${c.results_summary}`);
   for (const s of c.sections ?? []) {

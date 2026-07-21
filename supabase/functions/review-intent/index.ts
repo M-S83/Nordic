@@ -84,8 +84,8 @@ Deno.serve(async (req) => {
       const rows = gaps.map((g) => ({
         reflection_id,
         question_text:
-          `You hoped to see “${g.item}”, but none of your notes touched on it — ` +
-          "did it not come up, or did you not get a chance to look?",
+          `You hoped to see “${g.item}”, but none of your notes touched on it. ` +
+          "Did it not come up, or did you not get a chance to look?",
         question_type: "text",
         options: [],
       }));

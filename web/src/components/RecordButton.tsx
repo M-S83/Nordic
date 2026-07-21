@@ -5,7 +5,7 @@ import { Spinner } from "./ui";
 // Tap to start/stop recording; on stop, hands the audio blob to onComplete
 // (which uploads + transcribes). Shows a clear message if the mic is blocked.
 export function RecordButton({
-  onComplete, label = "Hold a thought — record",
+  onComplete, label = "Record a thought",
 }: { onComplete: (blob: Blob) => Promise<void>; label?: string }) {
   const rec = useRef(new Recorder());
   const [on, setOn] = useState(false);
@@ -13,7 +13,7 @@ export function RecordButton({
   const [err, setErr] = useState("");
 
   if (!micSupported()) {
-    return <p className="muted small">Voice recording isn’t supported on this device — type your note instead.</p>;
+    return <p className="muted small">Voice recording isn’t supported on this device. Type your note instead.</p>;
   }
 
   const toggle = async () => {
@@ -42,7 +42,7 @@ export function RecordButton({
           </svg>
         )}
       </button>
-      <span className="muted small">{busy ? "Transcribing…" : on ? "Recording — tap to stop" : label}</span>
+      <span className="muted small">{busy ? "Transcribing…" : on ? "Recording, tap to stop" : label}</span>
       {err && <p className="error">{err}</p>}
     </div>
   );

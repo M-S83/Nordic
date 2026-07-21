@@ -75,7 +75,7 @@ export default function PlayerReflection() {
           <div className="card">
             <div className="row wrap" style={{ gap: 8 }}>
               {game.result && <span className={`pill ${game.result === "win" ? "good" : game.result === "loss" ? "crit" : ""}`}>{game.result}</span>}
-              {game.goals_for != null && game.goals_against != null && <span className="pill">{game.goals_for}–{game.goals_against}</span>}
+              {game.goals_for != null && game.goals_against != null && <span className="pill">{game.goals_for}-{game.goals_against}</span>}
               {game.positions?.length > 0 && <span className="pill">{game.positions.join(", ")}</span>}
               {game.role && <span className="pill">{game.role.replace("_", " ")}</span>}
               {game.minutes_played != null && <span className="pill">{game.minutes_played} min</span>}
@@ -87,7 +87,7 @@ export default function PlayerReflection() {
 
         <div className="card stack">
           <h2 className="serif">What was the game like for you?</h2>
-          <p className="muted small">In your own words — write it or say it. This is just for you.</p>
+          <p className="muted small">In your own words, written or spoken. This is just for you.</p>
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5}
             placeholder="How did it feel? What went well, what was hard?" />
           <button className="btn" onClick={saveAccount} disabled={busy === "save" || !text.trim()}>
@@ -115,7 +115,7 @@ export default function PlayerReflection() {
                 {busy === "q" ? <Spinner /> : qs.length ? "Refresh" : "Ask me"}
               </button>
             </div>
-            <p className="muted small">Open questions from your own account — including anything your coach
+            <p className="muted small">Open questions from your own account, including anything your coach
               said to you, and what you made of it. All optional.</p>
             {qs.map((q) => (
               <div key={q.id} className="field">
@@ -141,7 +141,7 @@ export default function PlayerReflection() {
                 {busy === "report" ? <Spinner /> : reportList.length ? "Refresh" : "Draw it out"}
               </button>
             </div>
-            <p className="muted small">Points drawn from your own answers — never graded, never imposed.</p>
+            <p className="muted small">Points drawn from your own answers. Never graded, never imposed.</p>
             {reportList.map((r) => (
               <div key={r.id}>{r.content_markdown && <Markdown text={r.content_markdown} />}</div>
             ))}

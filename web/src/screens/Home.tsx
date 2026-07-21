@@ -57,7 +57,7 @@ export default function Home() {
             <Loading />
           ) : events.length === 0 ? (
             <div className="card muted">
-              Nothing yet. Set up a <Link to="/teams">team</Link>, then start your first session — capture a
+              Nothing yet. Set up a <Link to="/teams">team</Link>, then start your first session. Capture a
               few notes, then reflect.
             </div>
           ) : (

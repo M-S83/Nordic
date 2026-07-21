@@ -47,7 +47,7 @@ export default function Teams() {
               </button>
             ))}
             {teams.length === 0 && !adding && (
-              <div className="card muted">No teams yet. Add one to get started — you can add as many
+              <div className="card muted">No teams yet. Add one to get started. You can add as many
                 clubs and teams as you like and reflect on each separately.</div>
             )}
           </div>

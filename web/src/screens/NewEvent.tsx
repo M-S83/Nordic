@@ -57,7 +57,7 @@ export default function NewEvent() {
             <div className="card stack">
               <div className="field"><label>Team</label>
                 <select value={teamId} onChange={(e) => setTeamId(e.target.value)}>
-                  {teams.map((t) => <option key={t.id} value={t.id}>{t.name} — {t.club?.name}</option>)}
+                  {teams.map((t) => <option key={t.id} value={t.id}>{t.name}, {t.club?.name}</option>)}
                 </select></div>
 
               <div className="field"><label>Type</label>

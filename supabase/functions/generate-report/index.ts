@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
       event_id,
       created_by: event.user_id,
       report_type,
-      title: title ?? `${event.title} — Report`,
+      title: title ?? `${event.title}: Report`,
       content_json,
       content_markdown,
     }).select().single();
@@ -167,7 +167,7 @@ function toMarkdown(title: string, c: any): string {
       st === "showed_up" ? "✓" : st === "partly" ? "~" : "✗";
     lines.push(`\n## What you hoped to see`);
     for (const h of c.hoped_to_see) {
-      lines.push(`- ${mark(h.status)} **${h.item}**${h.note ? ` — ${h.note}` : ""}`);
+      lines.push(`- ${mark(h.status)} **${h.item}**${h.note ? `: ${h.note}` : ""}`);
     }
   }
   if (c.patterns?.length) {

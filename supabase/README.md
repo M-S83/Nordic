@@ -81,6 +81,12 @@ high-volume work runs on **Haiku**, reader-facing reports on **Sonnet**, nothing
 on Opus. Each call records its token cost to `usage_events`. See
 `docs/cost-model.md`.
 
+**Output language & house style** are centralised in `functions/_shared/voice.ts`,
+appended to every generation prompt: British English by default (from
+`profiles.language`, so more languages are a small change later) and no em
+dashes. Any user-facing text the code emits itself (report titles, insight
+prompts) is written the same way.
+
 ## Data model at a glance
 
 `clubs → teams → players` is the org hierarchy (each team sets its playing

@@ -53,13 +53,13 @@ export default function TeamDetail() {
           <div className="list">
             {list.map((p) => (
               <div key={p.id} className="card row">
-                <span className="mono" style={{ width: 30, color: "var(--muted)" }}>{p.shirt_number ?? "–"}</span>
+                <span className="mono" style={{ width: 30, color: "var(--muted)" }}>{p.shirt_number ?? "-"}</span>
                 <strong>{p.display_name}</strong>
                 <div className="spacer" />
                 {p.position && <span className="pill">{p.position}</span>}
               </div>
             ))}
-            {list.length === 0 && <div className="card muted">No players yet — add your squad above.</div>}
+            {list.length === 0 && <div className="card muted">No players yet. Add your squad above.</div>}
           </div>
         )}
       </div>

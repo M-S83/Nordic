@@ -110,6 +110,7 @@ export interface Profile {
   full_name: string | null;
   role: UserRole;
   club_id: string | null;
+  language: string; // BCP-47-ish tag driving AI output language (default 'en-GB')
   created_at: string;
   updated_at: string;
 }

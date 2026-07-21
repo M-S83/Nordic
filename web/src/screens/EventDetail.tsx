@@ -123,7 +123,7 @@ function Notes({ eventId, teamId }: { eventId: string; teamId: string | null }) 
               )}
             </div>
           ))}
-          {list.length === 0 && <div className="card muted">No notes yet — capture the first one above.</div>}
+          {list.length === 0 && <div className="card muted">No notes yet. Capture the first one above.</div>}
         </div>
       )}
       {list && list.length > 0 && (
@@ -191,7 +191,7 @@ function Reflect({ eventId }: { eventId: string }) {
     <>
       <div className="card stack">
         <h2 className="serif">Your reflection</h2>
-        <p className="muted small">Write or record what the session was like. Keep it in your own words — this
+        <p className="muted small">Write or record what the session was like. Keep it in your own words. This
           is a mirror, not a mark.</p>
         <textarea value={text} onChange={(e) => setText(e.target.value)} rows={5}
           placeholder="How did it go? What stood out?" />
@@ -262,7 +262,7 @@ function ReportSection({ ev }: { ev: EventRow }) {
   return (
     <>
       <div className="card stack">
-        <p className="muted small">A report organises what you and your notes actually said — it never grades
+        <p className="muted small">A report organises what you and your notes actually said, and never grades
           you. Generate one once you've captured notes and reflected.</p>
         <button className="btn" onClick={gen} disabled={busy}>
           {busy ? <Spinner /> : "Generate report"}

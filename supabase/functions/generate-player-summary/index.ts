@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
 
     const content_json = safeParse(raw);
     const heading = title ??
-      `My ${periodLabel[0].toUpperCase() + periodLabel.slice(1)} — Reflections`;
+      `My ${periodLabel[0].toUpperCase() + periodLabel.slice(1)} Reflections`;
     const content_markdown = toMarkdown(heading, content_json);
 
     const { data: report, error: insErr } = await admin.from("reports").insert({

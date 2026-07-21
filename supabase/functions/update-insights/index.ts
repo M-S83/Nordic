@@ -98,10 +98,10 @@ Deno.serve(async (req) => {
       let prompt: string | null = null;
       if (recurringWeeks) {
         if (sentiment === "concern") {
-          prompt = `${who} — “${b.tag}” has come up in ${weeksInWindow} of the last ` +
+          prompt = `${who}: “${b.tag}” has come up in ${weeksInWindow} of the last ` +
             `${WINDOW_WEEKS} weeks. How do you plan to tackle it?`;
         } else if (sentiment === "positive") {
-          prompt = `${who} — “${b.tag}” has shown up in ${weeksInWindow} of the last ` +
+          prompt = `${who}: “${b.tag}” has shown up in ${weeksInWindow} of the last ` +
             `${WINDOW_WEEKS} weeks. What have you done to let them know they've progressed?`;
         } else {
           prompt = `“${b.tag}” has recurred in ${weeksInWindow} of the last ` +
@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
       items_changed: created.length,
       summary: created.length
         ? `Picked up ${created.length} recurring theme${created.length === 1 ? "" : "s"} from ${observations?.length ?? 0} notes.`
-        : `Scanned ${observations?.length ?? 0} notes — no new recurring theme yet.`,
+        : `Scanned ${observations?.length ?? 0} notes, no new recurring theme yet.`,
     });
 
     return jsonResponse({ ok: true, insights: created, scanned: observations?.length ?? 0 });

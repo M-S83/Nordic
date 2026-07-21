@@ -6,7 +6,7 @@ const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 if (!url || !anon) {
   // Surfaced clearly rather than a cryptic runtime failure deep in a call.
   console.error(
-    "Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY — copy web/.env.example to web/.env and fill them in.",
+    "Missing VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY. Copy web/.env.example to web/.env and fill them in.",
   );
 }
 

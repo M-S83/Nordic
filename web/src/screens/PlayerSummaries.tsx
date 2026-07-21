@@ -41,7 +41,7 @@ export default function PlayerSummaries() {
     try {
       const { start, end } = range(period);
       const r = await generatePlayerSummary(period, start, end);
-      if (!r) setNote("No reflections in this period yet — log a game and reflect, then try again.");
+      if (!r) setNote("No reflections in this period yet. Log a game and reflect, then try again.");
       load();
     } catch (e) { setErr((e as Error).message); }
     finally { setBusy(false); }
@@ -53,7 +53,7 @@ export default function PlayerSummaries() {
         right={<button className="btn ghost sm" onClick={() => nav("/player")}>Back</button>} />
       <div className="screen stack">
         <div className="card stack">
-          <p className="muted small">A summary of your own reflections over time — what keeps showing in your
+          <p className="muted small">A summary of your own reflections over time. What keeps showing in your
             game, what you keep working on, what's shifted. In your words.</p>
           <div className="chipset">
             <button className={`chip ${period === "weekly_report" ? "on" : ""}`} onClick={() => setPeriod("weekly_report")}>This week</button>
