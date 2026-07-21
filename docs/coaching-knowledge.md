@@ -57,6 +57,28 @@ can use these to schedule three light reflection touch-points after an event
 (the app already has the scheduling backbone from `run-learning`). Not asked
 mid-reflection; surfaced on their own timeline.
 
+## Future direction — optional guidance on a persistent struggle
+
+If the self-learning loop shows a theme *genuinely persisting* — still recurring
+after the coach has been reflecting on it, not a one-off — the app could offer an
+optional link to specific guidance (a Coachcast episode, an FA resource, the
+relevant framework). This stays a mirror, not a verdict, only if it keeps three
+guardrails:
+
+- **Pull, not push** — the coach opens it if they want it; it is never popped up
+  as "you're getting this wrong."
+- **Only on a persistent, coach-surfaced pattern** — the theme came from their own
+  notes and is *still* recurring across cycles; the app never decides a topic is a
+  weakness on its own.
+- **An offer, dismissible** — "this has kept coming up — if it'd help, here's
+  something on it," never a grade or an instruction.
+
+The pieces already exist: `update-insights` detects recurrence (and carries a
+`reflective_prompt`); "still struggling" is that recurrence persisting. The wiring
+would be small — an optional `resource_url` on `coaching_frameworks` (or a
+tag→guidance map), surfaced only when an insight persists. **Not built yet** —
+deferred by design until it's wanted.
+
 ## Editing the content
 
 It's plain reference data. An admin can refine a prompt, add a framework, or
