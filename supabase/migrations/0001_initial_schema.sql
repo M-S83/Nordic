@@ -207,14 +207,16 @@ create table public.clubs (
 );
 
 -- Profiles: 1:1 with Supabase auth users -------------------------------------
--- A user can be a coach, player, coach_developer or admin and belongs
--- optionally to a single club.
+-- A user can be a coach, player, coach_developer or admin. A user can OWN many
+-- clubs and teams (a coach at two clubs, a player at two teams); `club_id` here
+-- is just an optional default/primary club for convenience — access is by
+-- ownership, not by this field.
 create table public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
   email       text,
   full_name   text,
   role        user_role not null default 'coach',
-  club_id     uuid references public.clubs (id) on delete set null,
+  club_id     uuid references public.clubs (id) on delete set null, -- optional default club
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

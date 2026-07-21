@@ -28,22 +28,26 @@ Deno.serve(async (req) => {
     if (!auth?.user) return jsonResponse({ error: "Not authenticated" }, 401);
     const userId = auth.user.id;
 
-    const { report_type, period_start, period_end, title } = await req.json();
+    // Optional team_id scopes the summary to one team the player plays for, so a
+    // player at more than one club/team can reflect on each individually.
+    const { report_type, period_start, period_end, team_id, title } = await req.json();
     if (!report_type || !period_start || !period_end) {
       return jsonResponse({ error: "Missing report_type / period_start / period_end" }, 400);
     }
 
     // The player's own reflections in the period (with their event dates).
-    const { data: reflections } = await supa
+    let refQuery = supa
       .from("reflections")
       .select(
         "summary, enriched_summary, what_went_well, what_did_not_work, " +
-          "action_points, suggested_next_focus, events!inner(event_date, title, event_type)",
+          "action_points, suggested_next_focus, events!inner(event_date, title, event_type, team_id)",
       )
       .eq("user_id", userId)
       .eq("reflection_type", "player")
       .gte("events.event_date", period_start)
-      .lte("events.event_date", period_end)
+      .lte("events.event_date", period_end);
+    if (team_id) refQuery = refQuery.eq("events.team_id", team_id);
+    const { data: reflections } = await refQuery
       .order("events(event_date)", { ascending: true });
 
     if (!reflections || reflections.length === 0) {
@@ -108,7 +112,7 @@ Deno.serve(async (req) => {
 
     const { data: report, error: insErr } = await admin.from("reports").insert({
       event_id: null,
-      team_id: null,
+      team_id: team_id ?? null, // set when the summary is scoped to one of the player's teams
       created_by: userId,
       report_type,
       title: heading,

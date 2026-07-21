@@ -38,7 +38,15 @@ Functions in `../supabase`).
 > **Auth:** Supabase Auth (email magic link). On signup, a `profiles` row is
 > auto-created with a `role`. After login, route the user by `profiles.role`:
 > `coach`, `player`, `coach_developer`, `admin`. Let users pick their role +
-> optional club during onboarding (write to `profiles`).
+> optional default club during onboarding (write to `profiles`).
+>
+> **Access & sharing (important):** access is **ownership-only** — a user sees and
+> edits ONLY what they created; there is **no in-app sharing** between users. To
+> share a report, the user **exports the PDF** and sends it themselves. A user can
+> own **multiple clubs and teams** — support "add another club / team" and let
+> them switch between them and reflect on each **individually** (coaches at more
+> than one club, players at more than one team). Never build UI that exposes one
+> user's data to another.
 >
 > **Roles / modes (driven by role):**
 > - **Coach Mode** — manage clubs/teams/players (each team requires a playing

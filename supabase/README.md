@@ -199,8 +199,8 @@ Reports come at several cadences (`report_type`):
   (the report’s "Training ↔ match" section).
 
 Both write `content_json` + `content_markdown` (optional PDF to the `reports`
-bucket). Reports are visible only to the creator, club admins, or users listed
-in `report_access`.
+bucket). Reports are visible **only to their creator** — there is no in-app
+sharing yet; to share, export the PDF and send it.
 
 ### Long-term insight tracking (and how it feeds reflection)
 The notes tell the story; `update-insights` picks up the trend. It buckets each
@@ -234,15 +234,21 @@ taken all the way — the app mirrors not just what a coach saw, but how they sa
 
 ## Security model (RLS)
 
-All tables have RLS enabled. SECURITY DEFINER helpers avoid recursive lookups:
-`current_club_id()`, `current_user_role()`, `is_club_staff()`, `is_club_admin()`,
-`can_access_event()`, `can_access_report()`.
+At this stage access is **ownership-only** — each user sees and edits only what
+they created, with **no in-app sharing** between users. RLS is enabled on every
+table; SECURITY DEFINER helpers (`can_access_event()`, `can_access_report()`)
+avoid recursive lookups.
 
-- Users read/write their **own** records.
-- **Club admins** read their club’s records; **coaches / coach developers** read
-  their club’s teams, players and events.
-- **Users** see events they created; **club staff** additionally see their club's events.
-- **Players** see only their own reflections.
-- **Reports** are restricted to creator, club admins, or `report_access` grants.
-- **Storage** objects are namespaced under `<auth.uid()>/…`; policies allow each
-  user to manage only their own folder in every bucket.
+- Users read/write their **own** records — clubs, teams, players, competitions,
+  events, observations, reflections, reports, insights, everything.
+- Because access is purely by ownership, **one person can own many clubs and
+  teams** (a coach at two clubs, a player at two teams) and reflect on each
+  individually — nothing is tied to a single "home" club. `profiles.club_id` is
+  just an optional default.
+- **Player** reflections and their `player_game_log` are private to the player;
+  a coach never sees them (and vice-versa).
+- **Reports** are visible only to their creator. **To share, export the PDF** —
+  there is no in-app sharing. (`report_access` is kept, dormant, so per-report
+  sharing can be switched on later without a migration.)
+- **Storage** objects are namespaced under `<auth.uid()>/…`; each user can manage
+  only their own folder in every bucket.
