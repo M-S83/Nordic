@@ -1,7 +1,7 @@
 import { supabase } from "./supabase";
 import type {
-  Club, EventRow, EventType, FollowupQuestion, Observation,
-  Player, Reflection, Report, TeamFormat, CapturePhase,
+  Club, EventRow, EventType, FollowupQuestion, HomeAway, Observation,
+  Player, PlayerGameLog, PlayerMatchRole, Reflection, Report, TeamFormat, CapturePhase,
 } from "./types";
 
 async function uid(): Promise<string> {
@@ -168,7 +168,9 @@ export async function getReflection(eventId: string): Promise<Reflection | null>
   return (data as Reflection) ?? null;
 }
 
-export async function saveTextReflection(eventId: string, text: string): Promise<Reflection> {
+export async function saveTextReflection(
+  eventId: string, text: string, kind: "coach" | "player" = "coach",
+): Promise<Reflection> {
   const me = await uid();
   const existing = await getReflection(eventId);
   if (existing) {
@@ -180,14 +182,16 @@ export async function saveTextReflection(eventId: string, text: string): Promise
   }
   const { data, error } = await supabase
     .from("reflections")
-    .insert({ event_id: eventId, user_id: me, reflection_type: "coach", raw_transcript: text, summary: text })
+    .insert({ event_id: eventId, user_id: me, reflection_type: kind, raw_transcript: text, summary: text })
     .select().single();
   if (error) throw error;
   return data as Reflection;
 }
 
 // Save a voice reflection: upload, insert/attach, transcribe.
-export async function saveVoiceReflection(eventId: string, blob: Blob): Promise<Reflection> {
+export async function saveVoiceReflection(
+  eventId: string, blob: Blob, kind: "coach" | "player" = "coach",
+): Promise<Reflection> {
   const me = await uid();
   const path = `${me}/${eventId}/reflection-${crypto.randomUUID()}.webm`;
   const up = await supabase.storage.from("audio-recordings").upload(path, blob, { contentType: "audio/webm" });
@@ -197,7 +201,7 @@ export async function saveVoiceReflection(eventId: string, blob: Blob): Promise<
   if (!ref) {
     const { data, error } = await supabase
       .from("reflections")
-      .insert({ event_id: eventId, user_id: me, reflection_type: "coach", audio_path: path })
+      .insert({ event_id: eventId, user_id: me, reflection_type: kind, audio_path: path })
       .select().single();
     if (error) throw error;
     ref = data as Reflection;
@@ -246,6 +250,87 @@ export async function generateReport(eventId: string, eventType: EventType): Pro
     : eventType === "training_session" ? "training_report" : "other_report";
   const { data, error } = await supabase.functions.invoke("generate-report", {
     body: { event_id: eventId, report_type: reportType },
+  });
+  if (error) throw error;
+  return (data?.report as Report) ?? null;
+}
+
+// =============================================================================
+// PLAYER MODE — a private, self-owned reflection space (independent of coaches).
+// =============================================================================
+export interface PlayerGameRow extends PlayerGameLog {
+  events: { id: string; title: string; event_type: EventType; event_date: string | null } | null;
+}
+
+export async function playerGames(): Promise<PlayerGameRow[]> {
+  const me = await uid();
+  const { data, error } = await supabase
+    .from("player_game_log")
+    .select("*, events(id, title, event_type, event_date)")
+    .eq("user_id", me)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as unknown as PlayerGameRow[];
+}
+
+export async function createPlayerGame(input: {
+  is_match: boolean; title: string; event_date: string; opposition: string;
+  home_away: HomeAway | null; positions: string[]; role: PlayerMatchRole | null;
+  goals_for: number | null; goals_against: number | null; minutes: number | null;
+  my_goals: number; my_assists: number;
+}): Promise<string> {
+  const me = await uid();
+  const { data: ev, error: e1 } = await supabase
+    .from("events")
+    .insert({
+      user_id: me, team_id: null, club_id: null,
+      event_type: input.is_match ? "match" : "training_session",
+      title: input.title, event_date: input.event_date || null,
+      opposition: input.opposition || null, status: "completed",
+    })
+    .select("id").single();
+  if (e1) throw e1;
+  const eventId = (ev as { id: string }).id;
+
+  const { error: e2 } = await supabase.from("player_game_log").insert({
+    event_id: eventId, user_id: me, positions: input.positions,
+    role: input.role, home_away: input.home_away, opposition: input.opposition || null,
+    goals_for: input.goals_for, goals_against: input.goals_against,
+    minutes_played: input.minutes, my_goals: input.my_goals, my_assists: input.my_assists,
+  });
+  if (e2) throw e2;
+  return eventId;
+}
+
+export async function getPlayerGame(eventId: string): Promise<PlayerGameLog | null> {
+  const { data, error } = await supabase
+    .from("player_game_log").select("*").eq("event_id", eventId).maybeSingle();
+  if (error) throw error;
+  return (data as PlayerGameLog) ?? null;
+}
+
+export async function generatePlayerReport(eventId: string): Promise<Report | null> {
+  const { data, error } = await supabase.functions.invoke("generate-report", {
+    body: { event_id: eventId, report_type: "player_report" },
+  });
+  if (error) throw error;
+  return (data?.report as Report) ?? null;
+}
+
+export async function playerSummaries(): Promise<Report[]> {
+  const { data, error } = await supabase
+    .from("reports").select("*").is("event_id", null).is("team_id", null)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Report[];
+}
+
+export async function generatePlayerSummary(
+  reportType: "weekly_report" | "monthly_report" | "season_report",
+  periodStart: string, periodEnd: string,
+): Promise<Report | null> {
+  const { data, error } = await supabase.functions.invoke("generate-player-summary", {
+    body: { report_type: reportType, period_start: periodStart, period_end: periodEnd },
   });
   if (error) throw error;
   return (data?.report as Report) ?? null;

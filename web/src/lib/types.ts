@@ -37,6 +37,38 @@ export interface Report {
   content_markdown: string | null; created_at: string;
 }
 
+// ---- Player Mode ------------------------------------------------------------
+export type PlayerMatchRole = "started" | "substitute" | "game_changer";
+export type HomeAway = "home" | "away" | "neutral";
+export type MatchResult = "win" | "draw" | "loss";
+
+export interface PlayerGameLog {
+  id: string;
+  event_id: string;
+  positions: string[];
+  role: PlayerMatchRole | null;
+  home_away: HomeAway | null;
+  opposition: string | null;
+  goals_for: number | null;
+  goals_against: number | null;
+  result: MatchResult | null; // generated from the score
+  minutes_played: number | null;
+  my_goals: number;
+  my_assists: number;
+  created_at: string;
+}
+
+export const ROLES: { value: PlayerMatchRole; label: string }[] = [
+  { value: "started", label: "Started" },
+  { value: "substitute", label: "Came on" },
+  { value: "game_changer", label: "Game changer" },
+];
+export const HOME_AWAY: { value: HomeAway; label: string }[] = [
+  { value: "home", label: "Home" },
+  { value: "away", label: "Away" },
+  { value: "neutral", label: "Neutral" },
+];
+
 export const FORMATS: TeamFormat[] = ["3v3", "5v5", "6v6", "7v7", "9v9", "11v11"];
 export const EVENT_TYPES: { value: EventType; label: string }[] = [
   { value: "training_session", label: "Training" },

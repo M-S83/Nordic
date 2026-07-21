@@ -4,6 +4,7 @@ import { recentEvents } from "../lib/db";
 import type { EventRow } from "../lib/types";
 import { useAuth } from "../auth/AuthProvider";
 import { ErrorText, Loading, TopBar, isIOS, useInstallPrompt } from "../components/ui";
+import { ModeSwitch } from "../components/ModeSwitch";
 
 function fmtDate(d: string | null) {
   if (!d) return "";
@@ -27,7 +28,8 @@ export default function Home() {
     <div className="app">
       <TopBar
         title="Reflective Lens"
-        right={<button className="btn ghost sm" onClick={() => signOut()}>Sign out</button>}
+        eyebrow="Coach"
+        right={<div className="row" style={{ gap: 6 }}><ModeSwitch /><button className="btn ghost sm" onClick={() => signOut()}>Sign out</button></div>}
       />
       <div className="screen stack">
         {(canInstall || isIOS()) && !dismissInstall && (

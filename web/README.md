@@ -39,6 +39,19 @@ npm run preview           # serve the production build locally
   - **Report** — generate a "mirror, not verdict" report from your notes and
     reflection.
 
+### Player Mode (independent, private)
+
+Toggle **Player mode** from the top bar — a separate, self-owned space (coach and
+player reflections never mix):
+
+- **Log a game** — match or training, with your own context: position(s), how you
+  featured (started / came on / game changer), home/away, score, minutes, your
+  goals/assists.
+- **Reflect** — write or dictate what the game was like for you; get optional open
+  questions drawn from your own account (including anything your coach said and
+  what you made of it); draw out your focus for next.
+- **My story** — weekly / monthly / season summaries of your own reflections.
+
 ## Structure
 
 ```
