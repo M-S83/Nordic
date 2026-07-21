@@ -12,7 +12,7 @@
 // Body: { user_id?: string }  (defaults to the calling user)
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
       return jsonResponse({ ok: true, profile: null, reason: "not enough of the coach's own writing yet" });
     }
 
+    const admin = serviceClient();
     const raw = await callClaude({
       system:
         "You analyse how a football coach writes, from samples of their own " +
@@ -57,11 +58,13 @@ Deno.serve(async (req) => {
         '"technical"}.',
       prompt: samples.map((s, i) => `${i + 1}. ${s}`).join("\n"),
       maxTokens: 1024,
+      model: MODELS.voiceProfile,
+      feature: "update-voice-profile",
+      log: { admin, userId },
     });
 
     const parsed = safeParse(raw);
 
-    const admin = serviceClient();
     const { data: profile, error } = await admin
       .from("coach_voice_profiles")
       .upsert({

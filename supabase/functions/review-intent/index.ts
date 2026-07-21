@@ -12,7 +12,7 @@
 // Body: { reflection_id: string }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 interface ReviewItem {
@@ -67,6 +67,9 @@ Deno.serve(async (req) => {
         voice,
       prompt: JSON.stringify({ hoping_to_see: hoping, notes }),
       maxTokens: 1024,
+      model: MODELS.reviewIntent,
+      feature: "review-intent",
+      log: { admin, userId: ref.user_id },
     });
 
     const review: ReviewItem[] = safeParse(raw);

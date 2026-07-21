@@ -6,7 +6,7 @@
 // Body: { team_sheet_id: string }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 
 interface ExtractedPlayer {
   shirt_number: number | null;
@@ -50,6 +50,9 @@ Deno.serve(async (req) => {
         "position (string|null), team_name (string|null), is_starter (bool), " +
         "confidence_score (0-1). Do not invent players.",
       prompt: sourceText || "(no text supplied)",
+      model: MODELS.teamSheet,
+      feature: "process-team-sheet",
+      log: { admin, userId: sheet.uploaded_by },
     });
 
     const players = safeParse(raw);

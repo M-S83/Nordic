@@ -16,7 +16,7 @@
 // }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
@@ -103,6 +103,9 @@ Deno.serve(async (req) => {
         voice,
       prompt: `Summary type: ${report_type}\n\nMy reflections:\n${payload}`,
       maxTokens: 2048,
+      model: MODELS.playerSummary,
+      feature: "generate-player-summary",
+      log: { admin, userId, teamId: team_id ?? null },
     });
 
     const content_json = safeParse(raw);

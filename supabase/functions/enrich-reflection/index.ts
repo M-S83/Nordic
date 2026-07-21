@@ -15,7 +15,7 @@
 // Body: { reflection_id: string }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
@@ -68,6 +68,9 @@ Deno.serve(async (req) => {
         added_context: answered,
       }),
       maxTokens: 1024,
+      model: MODELS.enrichReflection,
+      feature: "enrich-reflection",
+      log: { admin, userId: ref.user_id },
     });
 
     const enriched_summary = raw.trim();

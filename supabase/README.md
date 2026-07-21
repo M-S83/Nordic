@@ -21,10 +21,11 @@ supabase/
     0001_initial_schema.sql        Enums + tables + triggers
     0002_rls_policies.sql          Row Level Security + helper functions
     0003_storage_buckets.sql       Buckets + storage.objects policies
+    0004_usage_analytics.sql       usage_events + analytics views + plans/subscriptions
   seed.sql                         Example data (club, team, players, events…)
   functions/
-    _shared/                       CORS + Supabase/Claude client helpers
-    transcribe-audio/              Audio → transcript
+    _shared/                       CORS + Supabase/Claude client helpers (models, pricing, usage logging)
+    transcribe-audio/              Audio → transcript (+ logs Whisper cost)
     process-team-sheet/            Team sheet → extracted players
     clean-observation/             Raw note → cleaned note + tags + sentiment
     generate-reflection-questions/ Reflection → optional context-nudge questions
@@ -34,7 +35,11 @@ supabase/
     generate-period-report/        Team + date range → weekly/monthly/season report
     update-insights/               Observations → long-term pattern insights
     update-voice-profile/          Coach's own writing → learned voice profile
+    create-checkout/               Plan → Stripe Checkout Session (start a subscription)
+    billing-webhook/               Stripe events → subscriptions (entitlement source of truth)
 types/database.ts                  TypeScript interfaces for the main objects
+../docs/cost-model.md              Cost-to-run per user (week/month/season) + levers
+../docs/analytics.md               Usage analytics + monetisation reference
 ```
 
 ## Quick start
@@ -53,8 +58,16 @@ Edge Function secrets:
 ```bash
 supabase secrets set ANTHROPIC_API_KEY=...   # clean/questions/report/team-sheet
 supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
+supabase secrets set STRIPE_SECRET_KEY=...    # create-checkout
+supabase secrets set STRIPE_WEBHOOK_SECRET=... # billing-webhook (signature verification)
+supabase secrets set APP_URL=...              # checkout success/cancel redirects
 # SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are injected.
 ```
+
+AI model choice is centralised in `functions/_shared/clients.ts` (`MODELS`):
+high-volume work runs on **Haiku**, reader-facing reports on **Sonnet**, nothing
+on Opus. Each call records its token cost to `usage_events`. See
+`docs/cost-model.md`.
 
 ## Data model at a glance
 
@@ -74,8 +87,9 @@ over time and can be scoped to a user, club, team or player.
 ### Coach Mode
 A coach creates `events` of type `training_session` / `match` / `coach_observation`,
 captures live `observations`, records a `coach` reflection, and generates a
-`coach_reflection` report. Their `club_id` + `coach` role lets them read their
-club’s teams, players and events (RLS helper `is_club_staff`).
+`coach_reflection` report. Access is **ownership-only**: a coach sees exactly what
+they created, which also lets one person own several clubs/teams and reflect on
+each individually (see the Security model below).
 
 ### Player Mode
 Player Mode is **independent of Coach Mode** — a player's reflection space is
@@ -231,6 +245,17 @@ that every generating function appends, so `clean-observation`,
 voice. Notably, `clean-observation` now *preserves* the coach's own terminology
 rather than upgrading it to textbook language. This is "mirror, not verdict"
 taken all the way — the app mirrors not just what a coach saw, but how they say it.
+
+### Usage analytics & monetisation
+For monitoring usage (and, in future, selling the product), every meaningful
+action appends a row to `usage_events` — AI calls and transcriptions with their
+**cost stored per event**, plus engagement events written automatically by
+triggers. `is_admin()`-gated analytics views roll it up (active users, cost per
+feature, cost per user, MRR). To charge, `plans` + `subscriptions` describe what a
+user pays and their entitlement (`has_active_subscription()`); `create-checkout`
+starts a Stripe Checkout, and `billing-webhook` (verified by Stripe signature) is
+the **only** writer of paid status. Full reference in `docs/analytics.md`; the
+per-user cost breakdown behind the model tiering is in `docs/cost-model.md`.
 
 ## Security model (RLS)
 

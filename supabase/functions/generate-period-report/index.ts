@@ -16,7 +16,7 @@
 // }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
@@ -134,6 +134,9 @@ Deno.serve(async (req) => {
         voice,
       prompt: `Report type: ${report_type}\n\nData:\n${payload}`,
       maxTokens: 3072,
+      model: MODELS.periodReport,
+      feature: "generate-period-report",
+      log: { admin, userId: team.created_by, clubId: team.club_id, teamId: team.id },
     });
 
     const content_json = safeParse(raw);

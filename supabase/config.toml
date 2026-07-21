@@ -60,3 +60,11 @@ verify_jwt = true
 
 [functions.update-voice-profile]
 verify_jwt = true
+
+# Billing. create-checkout is called by a signed-in user; billing-webhook is
+# called by Stripe (no Supabase JWT) and authenticates via its signature.
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.billing-webhook]
+verify_jwt = false

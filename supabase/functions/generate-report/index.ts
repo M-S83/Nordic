@@ -9,7 +9,7 @@
 // Body: { event_id: string, report_type: ReportType, title?: string }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
@@ -122,6 +122,9 @@ Deno.serve(async (req) => {
         voice,
       prompt: `Report type: ${report_type}\n\nData:\n${payload}`,
       maxTokens: 2048,
+      model: MODELS.report,
+      feature: "generate-report",
+      log: { admin, userId: event.user_id, clubId: event.club_id, teamId: event.team_id },
     });
 
     const content_json = safeParse(raw);

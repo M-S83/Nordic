@@ -10,7 +10,7 @@
 // Body: { observation_id: string }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 Deno.serve(async (req) => {
@@ -40,6 +40,9 @@ Deno.serve(async (req) => {
         '"sentiment": "positive"|"concern"|"neutral", "phase_of_play": string|null}.' +
         voice,
       prompt: obs.raw_note,
+      model: MODELS.cleanObservation,
+      feature: "clean-observation",
+      log: { admin, userId: obs.user_id, teamId: obs.team_id },
     });
 
     const parsed = safeParse(raw);

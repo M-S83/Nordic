@@ -147,7 +147,8 @@ Functions in `../supabase`).
 >    (what's transferring, what isn't) — surfaced in a "Training ↔ match" section.
 >    View
 >    `content_markdown` rendered nicely + optional PDF from the `reports` bucket.
->    Reports are private to creator/club-admin/granted users.
+>    Reports are **private to their creator**; there's no in-app sharing yet —
+>    sharing is by **PDF export** only.
 > 7. **Insights** — long-term pattern cards from `update-insights`, which buckets
 >    themes by week and flags anything recurring in ≥3 of the last 4 weeks with a
 >    `sentiment` (concern/progress) and a `reflective_prompt`. Show the prompt on
@@ -159,11 +160,30 @@ Functions in `../supabase`).
 >    minutes, trainings attended) and a running development log
 >    (`player_development_notes`, categorised strength / development_area /
 >    target / general). Do not re-enter stats — they roll up from match data.
+> 9. **Subscription / plans** — read the `plans` table (public catalogue) and show
+>    the plans for the user's role (`coach_monthly` / `coach_season`, or
+>    `player_monthly` / `player_season`; `free` is the trial). "Subscribe" calls
+>    `create-checkout` with the `plan_id` and redirects to the returned Stripe
+>    URL. Show current status from the user's `subscriptions` row; gate paid
+>    features on `has_active_subscription()` (free trial → soft paywall). Never
+>    write subscription status from the client — Stripe's webhook owns it.
+> 10. **Admin analytics dashboard** (role `admin` only) — a usage-monitoring view
+>    for the product owner, read entirely from the `analytics_*` views (they
+>    return rows only to an admin). Show: the `analytics_overview` snapshot (total
+>    users, 7/30-day actives, 30-day provider cost, reflections & reports,
+>    paying/trialing) as headline cards; a DAU line chart from
+>    `analytics_daily_active_users`; a feature table from `analytics_feature_usage`
+>    (uses, users, **cost per feature**); a daily cost split from
+>    `analytics_cost_daily` (AI vs transcription); per-user cost from
+>    `analytics_user_cost_monthly`; and **MRR** from `analytics_mrr`. This is the
+>    "how is it used / what does it cost / what does it earn" screen for a future
+>    sale. Hide the whole route for non-admins.
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
 > `review-intent`, `enrich-reflection`, `generate-report`,
-> `generate-period-report`, `update-insights`, `update-voice-profile`.
+> `generate-period-report`, `generate-player-summary`, `update-insights`,
+> `update-voice-profile`, `create-checkout`, `billing-webhook` (Stripe → server).
 > Invoke via
 > `supabase.functions.invoke(...)` and reflect their results in the UI (e.g.
 > show the cleaned note after `clean-observation`, or the enriched summary after

@@ -394,6 +394,66 @@ export interface Insight {
   updated_at: string;
 }
 
+// ---- Usage analytics --------------------------------------------------------
+
+// One append-only row per tracked action. AI/transcription rows carry a cost;
+// engagement rows (written by DB triggers) don't. See migration 0004.
+export interface UsageEvent {
+  id: string;
+  user_id: string;
+  event_name: string; // 'ai_call' | 'transcription' | 'reflection_created' | ...
+  feature: string | null;
+  model: string | null; // Claude model id, for ai_call
+  input_tokens: number | null;
+  output_tokens: number | null;
+  audio_seconds: number | null;
+  cost_usd: number; // provider cost of this event
+  club_id: string | null;
+  team_id: string | null;
+  metadata: Record<string, unknown>;
+  created_at: string;
+}
+
+// ---- Monetisation -----------------------------------------------------------
+
+export type PlanInterval = "month" | "season" | "once" | "free";
+
+export type SubscriptionStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "incomplete";
+
+export interface Plan {
+  id: string; // 'free' | 'coach_monthly' | ...
+  name: string;
+  description: string | null;
+  price_pence: number; // minor units
+  currency: string; // 'gbp'
+  interval: PlanInterval;
+  ai_budget_usd: number | null; // soft monthly AI-cost ceiling (margin monitoring)
+  is_active: boolean;
+  sort_order: number;
+  features: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan_id: string;
+  status: SubscriptionStatus;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  trial_ends_at: string | null;
+  current_period_start: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---- Storage bucket names ---------------------------------------------------
 
 export const BUCKETS = {

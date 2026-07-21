@@ -11,7 +11,7 @@
 // Body: { reflection_id: string, max_questions?: number }
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
 import { voiceInstruction } from "../_shared/voice.ts";
 
 interface GeneratedQuestion {
@@ -85,6 +85,9 @@ Deno.serve(async (req) => {
         "(array of {value,label}; [] unless multiple_choice)." +
         voice,
       prompt: context,
+      model: MODELS.reflectionQuestions,
+      feature: "generate-reflection-questions",
+      log: { admin, userId: ref.user_id },
     });
 
     const questions = safeParse(raw).slice(0, max_questions);
