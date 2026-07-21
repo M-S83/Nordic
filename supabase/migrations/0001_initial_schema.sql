@@ -213,7 +213,8 @@ create table public.clubs (
 -- ownership, not by this field.
 create table public.profiles (
   id          uuid primary key references auth.users (id) on delete cascade,
-  email       text,
+  email       text,                     -- from Supabase Auth (email sign-in)
+  phone       text,                     -- from Supabase Auth (mobile sign-in)
   full_name   text,
   role        user_role not null default 'coach',
   club_id     uuid references public.clubs (id) on delete set null, -- optional default club
@@ -704,10 +705,11 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
-  insert into public.profiles (id, email, full_name, role)
+  insert into public.profiles (id, email, phone, full_name, role)
   values (
     new.id,
     new.email,
+    new.phone,                              -- mobile sign-in (email and/or phone)
     coalesce(new.raw_user_meta_data ->> 'full_name', ''),
     coalesce((new.raw_user_meta_data ->> 'role')::user_role, 'coach')
   )

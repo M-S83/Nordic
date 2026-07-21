@@ -35,10 +35,22 @@ Functions in `../supabase`).
 > AI response comes back in their words and at their level (grassroots → badged),
 > so never impose textbook jargon — reflect how the coach actually speaks.
 >
-> **Auth:** Supabase Auth (email magic link). On signup, a `profiles` row is
-> auto-created with a `role`. After login, route the user by `profiles.role`:
-> `coach`, `player`, `coach_developer`, `admin`. Let users pick their role +
-> optional default club during onboarding (write to `profiles`).
+> **Auth:** Supabase Auth — users sign in with **email and/or mobile number**
+> (email magic-link/OTP and phone SMS OTP; both enabled). On signup a `profiles`
+> row is auto-created (with `email`, `phone`, `role`). Route the user by
+> `profiles.role`: `coach`, `player`, `coach_developer`, `admin`. Let users pick
+> their role + optional default club during onboarding.
+>
+> **Installable app (PWA):** build the app as an installable PWA (web app
+> manifest + icon + service worker). Right after signup, show a step that helps
+> the user **add the app to their home screen** on phone/iPad — trigger the
+> `beforeinstallprompt` flow on Android/Chrome, and show clear "Add to Home
+> Screen" instructions (Share → Add to Home Screen) on iOS/Safari. Use the
+> Reflective Lens mark as the icon.
+>
+> **Microphone:** recording live notes, reflections and answers needs mic access
+> — request the microphone permission at the moment the user first taps record
+> (getUserMedia), with a friendly explainer, and fall back to text if declined.
 >
 > **Access & sharing (important):** access is **ownership-only** — a user sees and
 > edits ONLY what they created; there is **no in-app sharing** between users. To

@@ -105,7 +105,8 @@ export interface Club {
 
 export interface Profile {
   id: string; // == auth.users.id
-  email: string | null;
+  email: string | null; // email sign-in
+  phone: string | null; // mobile sign-in
   full_name: string | null;
   role: UserRole;
   club_id: string | null;

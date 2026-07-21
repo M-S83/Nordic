@@ -16,6 +16,17 @@ enabled = true
 [auth]
 enable_signup = true
 
+# Sign in with email and/or mobile number.
+[auth.email]
+enable_signup = true
+
+[auth.sms]
+enable_signup = true
+# In production, configure an SMS provider (e.g. Twilio) here:
+#   [auth.sms.twilio]
+#   account_sid = "env(TWILIO_ACCOUNT_SID)"
+#   ...
+
 # Edge Functions. AI/STT functions verify the caller's JWT.
 [functions.transcribe-audio]
 verify_jwt = true
