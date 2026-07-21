@@ -167,9 +167,15 @@ Functions in `../supabase`).
 >    URL. Show current status from the user's `subscriptions` row; gate paid
 >    features on `has_active_subscription()` (free trial → soft paywall). Never
 >    write subscription status from the client — Stripe's webhook owns it.
-> 10. **Admin analytics dashboard** (role `admin` only) — a usage-monitoring view
->    for the product owner, read entirely from the `analytics_*` views (they
->    return rows only to an admin). Show: the `analytics_overview` snapshot (total
+> 10. **Admin analytics dashboard** — a **hidden link**: a usage-monitoring view
+>    for the product owner only. It must NOT appear in any nav, menu, footer, or
+>    profile — no visible entry point anywhere in the app. It lives at one
+>    unlisted, hard-to-guess route (e.g. `/studio`, not `/admin`) reachable only
+>    by typing the URL. Gate it three ways, belt-and-braces: (a) the route redirects
+>    away unless `profiles.role = 'admin'`; (b) nothing links to it; (c) it reads
+>    entirely from the `analytics_*` views, which **return zero rows to a
+>    non-admin** — so even if someone finds the URL, the page shows nothing.
+>    Show: the `analytics_overview` snapshot (total
 >    users, 7/30-day actives, 30-day provider cost, reflections & reports,
 >    paying/trialing) as headline cards; a DAU line chart from
 >    `analytics_daily_active_users`; a feature table from `analytics_feature_usage`
@@ -178,8 +184,8 @@ Functions in `../supabase`).
 >    `analytics_user_cost_monthly`; **MRR** from `analytics_mrr`; and **what the
 >    app has been learning** from `analytics_learning_recent` (voice/insight
 >    passes per day). This is the "how is it used / what does it cost / what does
->    it earn / how is it improving" screen for a future sale. Hide the whole route
->    for non-admins.
+>    it earn / how is it improving" screen for a future sale — kept off the map,
+>    for the owner's eyes only.
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
