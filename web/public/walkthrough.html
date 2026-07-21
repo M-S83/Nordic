@@ -123,6 +123,14 @@
     .rail{ gap:26px 14px; }
     .sheet{ padding:20px; }
   }
+  /* Print / PDF: keep each screen and report whole on a page. */
+  @media print {
+    body{ background:#fff; }
+    .section{ margin-top:26px; }
+    .section > h2{ break-after:avoid; }
+    .step, .sheet{ break-inside:avoid; }
+    .foot{ break-inside:avoid; }
+  }
   .sheet{ --ink:#1a2620; --ssub:#5c6b60; --sline:#e2e2d5; --spitch:#123a2a; --sgood:#2f8a57; --swarn:#c2892f; --scrit:#b5493c;
     background:#fbfbf6; color:var(--ink); border:1px solid #dcdccf; border-radius:16px; padding:24px 26px;
     box-shadow:0 10px 30px rgba(12,26,18,.10); text-align:left; }
