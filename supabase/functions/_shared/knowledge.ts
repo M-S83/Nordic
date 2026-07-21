@@ -66,10 +66,13 @@ export async function reflectionGrounding(
   }
 
   return (
-    "GROUNDING — these are real coach-reflection questions from an England Football " +
-    "coaching knowledge base. Draw on and adapt the ones that fit what the coach " +
-    "wrote (rephrase in their voice); prefer them over inventing generic questions. " +
-    "They are OPEN reflective questions — never turn them into judgement:\n" +
+    "GROUNDING (for you, the system — NOT to be taught back). These are real " +
+    "coach-reflection questions from a coaching knowledge base. Use them to shape " +
+    "a better OPEN question about what THIS coach actually wrote — draw on and " +
+    "adapt the ones that fit, rephrased in their own voice. This app is a mirror, " +
+    "not a teacher: never name a framework or model, never cite a source, never " +
+    "tell the coach what good coaching is, and never turn a prompt into advice or " +
+    "judgement. Only ask, in their terms, so they reflect on their own session:\n" +
     picked.map((p) => `- ${p}`).join("\n") +
     "\n"
   );

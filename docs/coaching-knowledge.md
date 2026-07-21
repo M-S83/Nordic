@@ -4,6 +4,14 @@ What grounds the app's reflection in real coaching pedagogy, so its nudges sound
 like a thoughtful coach developer — not a generic chatbot — while staying true to
 **mirror, not verdict**.
 
+> **This is knowledge for the *system*, not curriculum for the coach.** It shapes
+> how the app listens, asks and organises — behind the reflective surface. The
+> coach does the reflecting; the app never teaches these frameworks *at* them,
+> names a model back to them, or grades them against one. The prompt bank becomes
+> *open questions in the coach's own words*; the taxonomy is *internal* bucketing;
+> the frameworks are *never surfaced* to the coach. If any of it ever reads as
+> instruction or a verdict, it has crossed the line.
+
 ## Source & provenance
 
 Distilled from England Football's *Coachcast* series (22 episodes), covering
