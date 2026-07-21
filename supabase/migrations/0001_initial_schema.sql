@@ -24,6 +24,8 @@ create type user_role as enum (
 create type event_type as enum (
   'training_session',
   'match',
+  'tournament',
+  'other',
   'coach_observation',
   'player_reflection'
 );
@@ -168,6 +170,8 @@ create type question_type as enum (
 create type report_type as enum (
   'training_report',
   'match_report',
+  'tournament_report',
+  'other_report',
   'weekly_report',
   'monthly_report',
   'season_report',

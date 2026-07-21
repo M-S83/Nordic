@@ -55,7 +55,10 @@ Deno.serve(async (req) => {
       "Principle: MIRROR, NOT VERDICT — never judge or tell them what to do. Ask a " +
       "few open, curious, personal questions grounded in THEIR account: what made a " +
       "moment feel the way it did, when they felt most/least themselves, what they'd " +
-      "want from next time. Questions open a door; they don't lead to an answer.\n" +
+      "want from next time. Where it fits, you may also ask whether their coach said " +
+      "anything to them about their game and what they made of it (the player reflects " +
+      "on real feedback they were given — nothing is shared between accounts). " +
+      "Questions open a door; they don't lead to an answer.\n" +
       `- Ask ${max_questions} short open questions, each tied to something they said.\n` +
       "- Every question is optional and skippable.\n";
 

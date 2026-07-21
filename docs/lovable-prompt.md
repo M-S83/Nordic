@@ -43,7 +43,8 @@ Functions in `../supabase`).
 > **Roles / modes (driven by role):**
 > - **Coach Mode** — manage clubs/teams/players (each team requires a playing
 >   **format**: `3v3` / `5v5` / `6v6` / `7v7` / `9v9` / `11v11`, on `teams.format`);
->   create `training_session` / `match` / `coach_observation` events; capture live
+>   create events — **match / training / tournament / other** (plus
+>   `coach_observation`); capture live
 >   observations on their own squad; write a coach reflection; generate a report.
 > - **Player Mode** — a self-contained, **independent** reflection space (no
 >   coach/roster link). It's personal and question-led: the player (1) writes or
@@ -60,7 +61,9 @@ Functions in `../supabase`).
 > **Core screens:**
 > 1. **Home / dashboard** — recent events, quick "Start live capture", recent
 >    insights.
-> 2. **Event list + create event** — fields: title, type, date, opposition,
+> 2. **Event list + create event** — the event **type** is one of **match /
+>    training / tournament / other** (`event_type`: `match` / `training_session`
+>    / `tournament` / `other`). Fields: title, type, date, opposition,
 >    venue, team, and its **intent**: a `focus_area` (short theme), a `purpose`
 >    (the aim of the session), and `hoping_to_see` (a list of observable things
 >    you hope to see — render as add-able bullets). Status `draft → live →

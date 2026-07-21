@@ -19,6 +19,8 @@ export type UserRole =
 export type EventType =
   | "training_session"
   | "match"
+  | "tournament"
+  | "other"
   | "coach_observation"
   | "player_reflection";
 
@@ -75,6 +77,8 @@ export type QuestionType = "multiple_choice" | "voice" | "text" | "rating";
 export type ReportType =
   | "training_report"
   | "match_report"
+  | "tournament_report"
+  | "other_report"
   | "weekly_report"
   | "monthly_report"
   | "season_report"

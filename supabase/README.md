@@ -60,7 +60,7 @@ supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
 
 `clubs → teams → players` is the org hierarchy (each team sets its playing
 `format` — `3v3` … `11v11`), with `competitions` (leagues / cups) alongside. **Everything else hangs off an `event`** (training session,
-match, coach observation or player reflection). An event carries its intent up
+match, tournament, other, coach observation or player reflection). An event carries its intent up
 front — a `focus_area` (short theme), a `purpose` (the aim) and `hoping_to_see`
 (a JSONB list of observable things you hope to see) — and owns its `team_sheets`
 (+ `team_sheet_players`), `observations` (each phased `pre_event` / `live` /
@@ -173,9 +173,10 @@ notes can be captured by **text or by voice** — voice recordings go to
 
 ### Report generation (per-event and period)
 Reports come at several cadences (`report_type`):
-- **Per-event** — `training_report` / `match_report`: `generate-report`
-  aggregates one event’s observations + reflection (+ squad roster; match result
-  and per-player stats for matches) into a `reports` row (`event_id` set).
+- **Per-event** — `match_report` / `training_report` / `tournament_report` /
+  `other_report`: `generate-report` aggregates one event’s observations +
+  reflection (+ squad roster; match result and per-player stats for matches)
+  into a `reports` row (`event_id` set).
 - **Period** — `weekly_report` / `monthly_report` / `season_report`:
   `generate-period-report` combines *every note* from *all* of a team’s events
   across a date range (a weekly report combines that week’s training and match)
