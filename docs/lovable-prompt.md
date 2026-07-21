@@ -175,15 +175,22 @@ Functions in `../supabase`).
 >    `analytics_daily_active_users`; a feature table from `analytics_feature_usage`
 >    (uses, users, **cost per feature**); a daily cost split from
 >    `analytics_cost_daily` (AI vs transcription); per-user cost from
->    `analytics_user_cost_monthly`; and **MRR** from `analytics_mrr`. This is the
->    "how is it used / what does it cost / what does it earn" screen for a future
->    sale. Hide the whole route for non-admins.
+>    `analytics_user_cost_monthly`; **MRR** from `analytics_mrr`; and **what the
+>    app has been learning** from `analytics_learning_recent` (voice/insight
+>    passes per day). This is the "how is it used / what does it cost / what does
+>    it earn / how is it improving" screen for a future sale. Hide the whole route
+>    for non-admins.
 >
 > **Edge Functions to call (already deployed):** `transcribe-audio`,
 > `process-team-sheet`, `clean-observation`, `generate-reflection-questions`,
 > `review-intent`, `enrich-reflection`, `generate-report`,
 > `generate-period-report`, `generate-player-summary`, `update-insights`,
-> `update-voice-profile`, `create-checkout`, `billing-webhook` (Stripe → server).
+> `update-voice-profile`, `run-learning` (scheduled sweep — not called from the
+> UI), `create-checkout`, `billing-webhook` (Stripe → server). The app learns
+> continuously on its own (see `docs/continuous-learning.md`); you may also call
+> `update-insights` + `update-voice-profile` opportunistically right after a
+> reflection is saved, and can show a small "what your Lens has picked up lately"
+> note from the user's own `learning_runs` rows.
 > Invoke via
 > `supabase.functions.invoke(...)` and reflect their results in the UI (e.g.
 > show the cleaned note after `clean-observation`, or the enriched summary after

@@ -414,6 +414,32 @@ export interface UsageEvent {
   created_at: string;
 }
 
+// ---- Continuous learning ----------------------------------------------------
+
+// Per-user "what's waiting to be learned" + last-run bookkeeping (migration 0005).
+// A `*_pending_since` is non-null when there's new input the app hasn't learned
+// from yet; the nightly sweep clears it and stamps the matching last_*_run.
+export interface LearningState {
+  user_id: string;
+  voice_pending_since: string | null;
+  insights_pending_since: string | null;
+  last_voice_run: string | null;
+  last_insights_run: string | null;
+  updated_at: string;
+}
+
+// The visible ledger of what the app taught itself, and when.
+export interface LearningRun {
+  id: string;
+  user_id: string;
+  kind: "voice" | "insights";
+  inputs_seen: number;
+  items_changed: number; // insights created, or voice sample_count
+  summary: string | null;
+  metadata: Record<string, unknown>;
+  ran_at: string;
+}
+
 // ---- Monetisation -----------------------------------------------------------
 
 export type PlanInterval = "month" | "season" | "once" | "free";

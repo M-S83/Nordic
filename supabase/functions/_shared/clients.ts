@@ -92,6 +92,61 @@ export async function logUsage(admin: SupabaseClient, row: UsageRow): Promise<vo
   }
 }
 
+// -----------------------------------------------------------------------------
+// Actor resolution — who is this call acting for?
+//
+// The learning passes (update-insights, update-voice-profile) run in two modes:
+//   • a signed-in user recomputing their own learning, or
+//   • the nightly sweep (run-learning) recomputing a due user's learning on their
+//     behalf, authenticated by a shared cron secret rather than a user JWT.
+// Both resolve to a user id + a client that can read that user's rows.
+// -----------------------------------------------------------------------------
+export interface Actor {
+  userId: string;
+  read: SupabaseClient; // RLS-scoped for a user; service (admin) in cron mode
+  admin: SupabaseClient;
+  viaCron: boolean;
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+export async function resolveActor(req: Request): Promise<Actor | null> {
+  const admin = serviceClient();
+  const secret = Deno.env.get("LEARNING_CRON_SECRET");
+  const provided = req.headers.get("x-cron-secret");
+  const target = req.headers.get("x-target-user");
+
+  // Cron/sweep path: trusted server call for a specific user.
+  if (secret && provided && target && constantTimeEqual(provided, secret)) {
+    return { userId: target, read: admin, admin, viaCron: true };
+  }
+
+  // Normal path: a signed-in user acting for themselves.
+  const supa = userClient(req);
+  const { data: auth } = await supa.auth.getUser();
+  if (!auth?.user) return null;
+  return { userId: auth.user.id, read: supa, admin, viaCron: false };
+}
+
+// Record one learning pass to the visible ledger and clear that user's pending
+// flag so the same input isn't re-learned next sweep. Best-effort.
+export async function recordLearning(
+  admin: SupabaseClient,
+  row: { user_id: string; kind: "voice" | "insights"; inputs_seen?: number; items_changed?: number; summary?: string },
+): Promise<void> {
+  try {
+    await admin.from("learning_runs").insert(row);
+    await admin.rpc("clear_learning_pending", { target: row.user_id, which: row.kind });
+  } catch (_) {
+    // ignore — the learning still happened; only the bookkeeping failed
+  }
+}
+
 // Minimal Anthropic Messages API helper.
 //
 // Pass `feature` + `log` and the call's token cost is recorded to usage_events

@@ -46,6 +46,13 @@ Deno.serve(async (req) => {
     const admin = serviceClient();
     const voice = await voiceInstruction(admin, ref.user_id);
 
+    // Learn from its OWN behaviour, not just what the coach writes: if they keep
+    // skipping a kind of question, ask fewer of those and lean into what lands.
+    // (followup_questions RLS already scopes this to the user's own history.)
+    const { data: qHistory } = await supa
+      .from("followup_questions").select("question_type, skipped").limit(300);
+    const engagementHint = buildEngagementHint(qHistory ?? []);
+
     // Players and coaches get a different kind of question.
     //  • Player: open reflective questions ARE the point — always offer a few,
     //    grounded in what they wrote, to help them think it through.
@@ -80,6 +87,7 @@ Deno.serve(async (req) => {
     const raw = await callClaude({
       system:
         (ref.reflection_type === "player" ? playerSystem : coachSystem) +
+        engagementHint +
         'Return ONLY a JSON array of objects with keys: question_text (string), ' +
         'question_type ("text"|"voice"|"multiple_choice"|"rating"), options ' +
         "(array of {value,label}; [] unless multiple_choice)." +
@@ -140,4 +148,42 @@ function safeParse(raw: string): GeneratedQuestion[] {
   } catch {
     return [];
   }
+}
+
+// Turn the user's own answer-vs-skip history into a steer for the model. With
+// enough samples, name the kinds they keep skipping (so we ask fewer) and the
+// kind they engage with most (so we lean in). Silent until there's signal.
+function buildEngagementHint(
+  history: { question_type: string | null; skipped: boolean | null }[],
+): string {
+  const stat: Record<string, { n: number; skipped: number }> = {};
+  for (const q of history) {
+    const t = q.question_type ?? "text";
+    const s = (stat[t] ??= { n: 0, skipped: 0 });
+    s.n++;
+    if (q.skipped) s.skipped++;
+  }
+  const seen = Object.entries(stat).filter(([, s]) => s.n >= 4);
+  if (seen.length === 0) return "";
+
+  const skipped = seen
+    .filter(([, s]) => s.skipped / s.n >= 0.6)
+    .map(([t]) => t);
+  const engaged = seen
+    .slice()
+    .sort((a, b) => a[1].skipped / a[1].n - b[1].skipped / b[1].n)[0]?.[0];
+
+  const parts: string[] = [];
+  if (skipped.length) {
+    parts.push(
+      `This person usually skips ${skipped.join(" and ")} questions — ` +
+        "ask very few or none of those.",
+    );
+  }
+  if (engaged && !skipped.includes(engaged)) {
+    parts.push(`They engage most with ${engaged} questions — prefer that kind.`);
+  }
+  return parts.length
+    ? "Adapt to how they've engaged before: " + parts.join(" ") + " "
+    : "";
 }

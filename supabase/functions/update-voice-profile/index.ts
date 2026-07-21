@@ -12,21 +12,17 @@
 // Body: { user_id?: string }  (defaults to the calling user)
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { callClaude, MODELS, serviceClient, userClient } from "../_shared/clients.ts";
+import { callClaude, MODELS, recordLearning, resolveActor } from "../_shared/clients.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supa = userClient(req);
-    const { data: auth } = await supa.auth.getUser();
-    if (!auth?.user) return jsonResponse({ error: "Not authenticated" }, 401);
-
-    const body = await req.json().catch(() => ({}));
-    const userId: string = body.user_id ?? auth.user.id;
-    if (userId !== auth.user.id) {
-      return jsonResponse({ error: "Can only learn from your own writing" }, 403);
-    }
+    // A signed-in user learning from their own writing, or the nightly sweep
+    // (run-learning) learning on a due user's behalf.
+    const actor = await resolveActor(req);
+    if (!actor) return jsonResponse({ error: "Not authenticated" }, 401);
+    const { userId, read: supa, admin } = actor;
 
     // The coach's own words — raw (pre-cleaning) notes + reflection transcripts.
     const [{ data: obs }, { data: refs }] = await Promise.all([
@@ -42,10 +38,15 @@ Deno.serve(async (req) => {
     ].filter(Boolean);
 
     if (samples.length < 5) {
+      // Clear the pending flag so the sweep doesn't keep re-picking this user
+      // before there's enough of their writing to learn from.
+      await recordLearning(admin, {
+        user_id: userId, kind: "voice", inputs_seen: samples.length,
+        items_changed: 0, summary: "Not enough of their own writing to learn a voice yet.",
+      });
       return jsonResponse({ ok: true, profile: null, reason: "not enough of the coach's own writing yet" });
     }
 
-    const admin = serviceClient();
     const raw = await callClaude({
       system:
         "You analyse how a football coach writes, from samples of their own " +
@@ -77,6 +78,16 @@ Deno.serve(async (req) => {
       }, { onConflict: "user_id" })
       .select().single();
     if (error) return jsonResponse({ error: error.message }, 500);
+
+    // Record what this pass learned (and clear the pending flag).
+    await recordLearning(admin, {
+      user_id: userId,
+      kind: "voice",
+      inputs_seen: samples.length,
+      items_changed: samples.length,
+      summary: `Refined their voice from ${samples.length} of their own notes/reflections` +
+        (parsed.language_level ? ` (${parsed.language_level}).` : "."),
+    });
 
     return jsonResponse({ ok: true, profile, learned_from: samples.length });
   } catch (e) {

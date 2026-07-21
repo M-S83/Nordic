@@ -15,7 +15,7 @@
 // Body: { user_id?: string }  (defaults to the calling user)
 // =============================================================================
 import { corsHeaders, jsonResponse } from "../_shared/cors.ts";
-import { serviceClient, userClient } from "../_shared/clients.ts";
+import { recordLearning, resolveActor } from "../_shared/clients.ts";
 
 const WEEK_MS = 7 * 86_400_000;
 const WINDOW_WEEKS = 4; // "3 of the last 4 weeks"
@@ -37,15 +37,11 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supa = userClient(req);
-    const { data: auth } = await supa.auth.getUser();
-    if (!auth?.user) return jsonResponse({ error: "Not authenticated" }, 401);
-
-    const body = await req.json().catch(() => ({}));
-    const userId: string = body.user_id ?? auth.user.id;
-    if (userId !== auth.user.id) {
-      return jsonResponse({ error: "Can only recompute your own insights" }, 403);
-    }
+    // A signed-in user recomputing their own insights, or the nightly sweep
+    // (run-learning) recomputing a due user's — resolveActor handles both.
+    const actor = await resolveActor(req);
+    if (!actor) return jsonResponse({ error: "Not authenticated" }, 401);
+    const { userId, read: supa, admin } = actor;
 
     // The notes, with the date + subject needed to spot a trend over time.
     const { data: observations, error } = await supa
@@ -76,10 +72,17 @@ Deno.serve(async (req) => {
         buckets.set(key, b);
       }
     }
-    if (maxWeek === -Infinity) return jsonResponse({ ok: true, insights: [], scanned: 0 });
+    if (maxWeek === -Infinity) {
+      // Nothing datable to learn from yet — still clear the pending flag so the
+      // sweep doesn't keep re-picking this user until there's real input.
+      await recordLearning(admin, {
+        user_id: userId, kind: "insights", inputs_seen: observations?.length ?? 0,
+        items_changed: 0, summary: "No dated notes to detect trends from yet.",
+      });
+      return jsonResponse({ ok: true, insights: [], scanned: 0 });
+    }
     const windowStart = maxWeek - (WINDOW_WEEKS - 1);
 
-    const admin = serviceClient();
     const created: unknown[] = [];
 
     for (const b of buckets.values()) {
@@ -123,6 +126,17 @@ Deno.serve(async (req) => {
       }).select().single();
       if (data) created.push(data);
     }
+
+    // Record what this pass learned (and clear the pending flag).
+    await recordLearning(admin, {
+      user_id: userId,
+      kind: "insights",
+      inputs_seen: observations?.length ?? 0,
+      items_changed: created.length,
+      summary: created.length
+        ? `Picked up ${created.length} recurring theme${created.length === 1 ? "" : "s"} from ${observations?.length ?? 0} notes.`
+        : `Scanned ${observations?.length ?? 0} notes — no new recurring theme yet.`,
+    });
 
     return jsonResponse({ ok: true, insights: created, scanned: observations?.length ?? 0 });
   } catch (e) {

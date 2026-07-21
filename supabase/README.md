@@ -22,6 +22,7 @@ supabase/
     0002_rls_policies.sql          Row Level Security + helper functions
     0003_storage_buckets.sql       Buckets + storage.objects policies
     0004_usage_analytics.sql       usage_events + analytics views + plans/subscriptions
+    0005_continuous_learning.sql   learning_state + learning_runs + due/clear + triggers
   seed.sql                         Example data (club, team, players, events…)
   functions/
     _shared/                       CORS + Supabase/Claude client helpers (models, pricing, usage logging)
@@ -35,11 +36,13 @@ supabase/
     generate-period-report/        Team + date range → weekly/monthly/season report
     update-insights/               Observations → long-term pattern insights
     update-voice-profile/          Coach's own writing → learned voice profile
+    run-learning/                  Scheduled sweep → refresh voice + insights for changed users
     create-checkout/               Plan → Stripe Checkout Session (start a subscription)
     billing-webhook/               Stripe events → subscriptions (entitlement source of truth)
 types/database.ts                  TypeScript interfaces for the main objects
 ../docs/cost-model.md              Cost-to-run per user (week/month/season) + levers
 ../docs/analytics.md               Usage analytics + monetisation reference
+../docs/continuous-learning.md     How the app learns from itself, continuously
 ```
 
 ## Quick start
@@ -61,6 +64,7 @@ supabase secrets set OPENAI_API_KEY=...       # transcribe-audio (Whisper STT)
 supabase secrets set STRIPE_SECRET_KEY=...    # create-checkout
 supabase secrets set STRIPE_WEBHOOK_SECRET=... # billing-webhook (signature verification)
 supabase secrets set APP_URL=...              # checkout success/cancel redirects
+supabase secrets set LEARNING_CRON_SECRET=...  # run-learning (scheduled sweep auth)
 # SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are injected.
 ```
 
@@ -245,6 +249,18 @@ that every generating function appends, so `clean-observation`,
 voice. Notably, `clean-observation` now *preserves* the coach's own terminology
 rather than upgrading it to textbook language. This is "mirror, not verdict"
 taken all the way — the app mirrors not just what a coach saw, but how they say it.
+
+### Learning from itself, continuously
+The app improves from its own accumulating data without being asked. It learns a
+coach's **voice** (`update-voice-profile`), the recurring **patterns** in their
+notes (`update-insights`, whose prompts flow back into the next reflection), and
+even from its **own behaviour** — `generate-reflection-questions` steers away from
+question kinds the user keeps skipping. Migration `0005` makes these run
+**continuously**: triggers mark a user's learning "pending" on every new note or
+reflection (`learning_state`), a scheduled sweep (`run-learning`, driven by
+`pg_cron`) refreshes only the users who changed, and every pass is written to a
+visible `learning_runs` ledger (surfaced in the dashboard via
+`analytics_learning_recent`). Full detail in `docs/continuous-learning.md`.
 
 ### Usage analytics & monetisation
 For monitoring usage (and, in future, selling the product), every meaningful
