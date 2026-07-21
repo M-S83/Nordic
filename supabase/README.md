@@ -82,8 +82,15 @@ Player Mode is **independent of Coach Mode** — a player's reflection space is
 entirely their own, with no link to a coach or roster. A player (role `player`)
 creates their **own** `player_reflection` events and `player` reflections about
 their performance, answers optional follow-up questions, and gets a
-`player_report`. It runs on the same primitives as Coach Mode (reflections,
-follow-ups, reports, voice profile, insights) — no extra tables needed. Because
+`player_report`. The player flow is personal and question-led: the player
+**writes or dictates what the game was like for them** (their own account, kept
+in their words); `generate-reflection-questions` then asks a few **open
+reflective questions grounded in what they wrote** (for a player these are the
+point, always offered — not just a brevity nudge); and the report's focus-for-next
+is **drawn from the player's own answers**, never invented. `generate-report`
+restates only what the player actually said — it never adds a characterisation of
+the game they didn't make. It runs on the same primitives as Coach Mode
+(reflections, follow-ups, reports, voice profile, insights) — no extra tables. Because
 the player owns their event and reflection, ownership RLS makes it private by
 construction: `player` reflections are visible only to their author, and a coach
 never sees them (nor the player the coach's world). Coach and player reflection

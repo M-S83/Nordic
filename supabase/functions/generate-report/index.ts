@@ -40,6 +40,20 @@ Deno.serve(async (req) => {
         supa.from("match_stats").select("*, players(display_name)").eq("event_id", event_id),
       ]);
 
+    // The reflective open questions + the person's own answers — the focus for
+    // next is drawn from these, not invented.
+    const reflectionId = reflections?.[0]?.id;
+    const { data: qa } = reflectionId
+      ? await supa.from("followup_questions")
+        .select("question_text, followup_answers(answer_text, selected_option)")
+        .eq("reflection_id", reflectionId)
+      : { data: [] };
+    const reflective_qa = (qa ?? []).map((q: any) => ({
+      question: q.question_text,
+      answer: (q.followup_answers ?? [])[0]?.answer_text ??
+        (q.followup_answers ?? [])[0]?.selected_option ?? null,
+    })).filter((x) => x.answer);
+
     const payload = JSON.stringify({
       event: {
         type: event.event_type, title: event.title, date: event.event_date,
@@ -61,24 +75,39 @@ Deno.serve(async (req) => {
           summary: reflections[0].enriched_summary ?? reflections[0].summary,
         }
         : null,
+      // The reflective questions and the person's own answers.
+      reflective_qa,
       // Included for match reports (null/empty for training).
       match_result: matchDetails ?? null,
       match_stats: matchStats ?? [],
       roster: sheetPlayers ?? [],
     });
 
+    const isPlayer = report_type === "player_report" ||
+      reflections?.[0]?.reflection_type === "player";
+
     const admin = serviceClient();
     const voice = await voiceInstruction(admin, event.user_id);
 
     const raw = await callClaude({
       system:
-        "You produce structured football coaching reflection reports. " +
-        "Principle: MIRROR, NOT VERDICT — organise observations into themes and " +
-        "patterns; do not grade or judge. Include a \"hoped_to_see\" section that " +
-        "reflects each thing the coach hoped to see back against the notes " +
-        "(what showed up, and what wasn't observed — plainly, no judgement). " +
-        "For next-focus items, reflect back what the COACH noted for next time " +
-        "(from their reflection) — do not invent your own recommendations. " +
+        "You produce football reflection reports. " +
+        "Principle: MIRROR, NOT VERDICT — organise what was said; do not grade or " +
+        "judge. RESTATE ONLY what the coach or player actually said: never add a " +
+        "characterisation of the game or a person they did not make themselves " +
+        "(e.g. don't call it 'a sharp game' unless they did — 'felt sharp' is " +
+        "about them, not the match). " +
+        (isPlayer
+          ? "This is a PLAYER'S PERSONAL report. Keep it in their voice, personal " +
+            "and first/second person. Lead with their own account of the game. " +
+            "Draw the next-focus points from THEIR answers to the reflective " +
+            "questions (reflective_qa) — not your own ideas. Do not add tactical " +
+            "analysis they didn't raise. "
+          : "Include a \"hoped_to_see\" section that reflects each thing the coach " +
+            "hoped to see back against the notes (what showed up, and what wasn't " +
+            "observed — plainly). For next-focus items, reflect back what the " +
+            "coach noted for next time (and their answers to the reflective " +
+            "questions) — do not invent your own recommendations. ") +
         'Return ONLY JSON with keys: "headline" (string), "sections" (array of ' +
         '{heading, points: string[]}), "hoped_to_see" (array of {item, status, ' +
         'note}), "patterns" (string[]), "suggested_next_focus" (string[]).' +

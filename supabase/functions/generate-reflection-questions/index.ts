@@ -46,21 +46,37 @@ Deno.serve(async (req) => {
     const admin = serviceClient();
     const voice = await voiceInstruction(admin, ref.user_id);
 
+    // Players and coaches get a different kind of question.
+    //  • Player: open reflective questions ARE the point — always offer a few,
+    //    grounded in what they wrote, to help them think it through.
+    //  • Coach: a light nudge, only where the reflection is brief or broad.
+    const playerSystem =
+      "You help a PLAYER reflect on their own game, from what they wrote or said. " +
+      "Principle: MIRROR, NOT VERDICT — never judge or tell them what to do. Ask a " +
+      "few open, curious, personal questions grounded in THEIR account: what made a " +
+      "moment feel the way it did, when they felt most/least themselves, what they'd " +
+      "want from next time. Questions open a door; they don't lead to an answer.\n" +
+      `- Ask ${max_questions} short open questions, each tied to something they said.\n` +
+      "- Every question is optional and skippable.\n";
+
+    const coachSystem =
+      "You help a coach add a little context to their own reflection. " +
+      "Principle: MIRROR, NOT VERDICT — never judge, coach, or suggest what " +
+      "they should have done. Your ONLY job is to invite a bit more detail " +
+      "where the reflection reads as brief or broad: a concrete example, what " +
+      "something looked like, which player or moment, or what a vague word " +
+      "(\"chaotic\", \"good\", \"better\") actually meant here.\n" +
+      "Rules:\n" +
+      "- If a point is already specific and detailed, do NOT ask about it.\n" +
+      "- If the whole reflection is already rich, return an empty array [].\n" +
+      `- Ask AT MOST ${max_questions} short, gentle, open questions, each tied ` +
+      "to one thin or broad spot.\n" +
+      "- Questions invite context, not analysis or self-criticism, and are " +
+      "always skippable.\n";
+
     const raw = await callClaude({
       system:
-        "You help a coach add a little context to their own reflection. " +
-        "Principle: MIRROR, NOT VERDICT — never judge, coach, or suggest what " +
-        "they should have done. Your ONLY job is to invite a bit more detail " +
-        "where the reflection reads as brief or broad: a concrete example, what " +
-        "something looked like, which player or moment, or what a vague word " +
-        "(\"chaotic\", \"good\", \"better\") actually meant here.\n" +
-        "Rules:\n" +
-        "- If a point is already specific and detailed, do NOT ask about it.\n" +
-        "- If the whole reflection is already rich, return an empty array [].\n" +
-        `- Ask AT MOST ${max_questions} short, gentle, open questions, each tied ` +
-        "to one thin or broad spot.\n" +
-        "- Questions invite context, not analysis or self-criticism, and are " +
-        "always skippable.\n" +
+        (ref.reflection_type === "player" ? playerSystem : coachSystem) +
         'Return ONLY a JSON array of objects with keys: question_text (string), ' +
         'question_type ("text"|"voice"|"multiple_choice"|"rating"), options ' +
         "(array of {value,label}; [] unless multiple_choice)." +
