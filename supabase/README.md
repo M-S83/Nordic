@@ -78,10 +78,16 @@ captures live `observations`, records a `coach` reflection, and generates a
 club’s teams, players and events (RLS helper `is_club_staff`).
 
 ### Player Mode
-A player creates `player_reflection` events and `player` reflections about their
-own performance, answers optional follow-up questions, and gets a `player_report`.
-RLS keeps a player’s reflections private to them (`user_id = auth.uid()`) — they
-only see what they author.
+Player Mode is **independent of Coach Mode** — a player's reflection space is
+entirely their own, with no link to a coach or roster. A player (role `player`)
+creates their **own** `player_reflection` events and `player` reflections about
+their performance, answers optional follow-up questions, and gets a
+`player_report`. It runs on the same primitives as Coach Mode (reflections,
+follow-ups, reports, voice profile, insights) — no extra tables needed. Because
+the player owns their event and reflection, ownership RLS makes it private by
+construction: `player` reflections are visible only to their author, and a coach
+never sees them (nor the player the coach's world). Coach and player reflection
+are two separate, self-contained loops.
 
 ### Coach-developer Mode
 A coach developer supports and observes coaches. They create `coach_observation`

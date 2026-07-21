@@ -301,3 +301,36 @@ values (
   E'# U15 JPL — Monthly Report (June)\n\n**Record:** 1W 0D 0L · 2–0 goals\n\n## Themes this month\n- Building out under pressure has become a throughline across sessions\n- Scanning before receiving showing up consistently (Oscar)\n\n## Training ↔ match\n- Build-up work from training carried into the match (composed playing out, Maya at the 6)\n- Middle-third organisation flagged in training didn''t recur in the match — worth watching\n\n## Focus ahead\n- Middle-third organisation under fatigue\n- Receiving on the half-turn under pressure'
 )
 on conflict (id) do nothing;
+
+-- =============================================================================
+-- Player Mode — a standalone player, entirely independent of the coach
+-- (their own event + private reflection; not linked to any roster / club / team)
+-- =============================================================================
+\set player_user_id       '11111111-1111-1111-1111-111111111112'
+\set player_event_id      '55555555-5555-5555-5555-555555555503'
+\set player_reflection_id '77777777-7777-7777-7777-777777777702'
+
+insert into auth.users (id, email, raw_user_meta_data, created_at, updated_at)
+values (:'player_user_id', 'player@reflective.test',
+        '{"full_name":"Jordan Blake","role":"player"}'::jsonb, now(), now())
+on conflict (id) do nothing;
+
+-- The player's own reflection event — no club, no team, no coach.
+insert into public.events (id, user_id, event_type, title, event_date, status)
+values (:'player_event_id', :'player_user_id', 'player_reflection',
+        'My game — Saturday', '2026-06-21', 'completed')
+on conflict (id) do nothing;
+
+-- A private player reflection (owned by the player → only they can see it).
+insert into public.reflections
+  (id, event_id, user_id, reflection_type, raw_transcript, summary,
+   what_went_well, what_did_not_work, action_points)
+values (
+  :'player_reflection_id', :'player_event_id', :'player_user_id', 'player',
+  'felt sharp today, first touch was good and i kept getting on the ball to start attacks. lost concentration a bit near the end when we were chasing it',
+  'Felt sharp — good first touch and got on the ball a lot to start attacks; concentration dipped late on.',
+  '["Good first touch under pressure","Got on the ball to start attacks"]'::jsonb,
+  '["Concentration dipped late in the game"]'::jsonb,
+  '["Stay switched on in the closing spell"]'::jsonb
+)
+on conflict (id) do nothing;

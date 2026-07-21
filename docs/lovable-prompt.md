@@ -45,9 +45,11 @@ Functions in `../supabase`).
 >   **format**: `3v3` / `5v5` / `6v6` / `7v7` / `9v9` / `11v11`, on `teams.format`);
 >   create `training_session` / `match` / `coach_observation` events; capture live
 >   observations on their own squad; write a coach reflection; generate a report.
-> - **Player Mode** — create `player_reflection` events; record reflections
->   about own performance; answer optional follow-up questions; view own player
->   reports. A player only ever sees their own data.
+> - **Player Mode** — a self-contained reflection space, **independent of Coach
+>   Mode** (no coach/roster link). A player creates their own `player_reflection`
+>   events; records reflections about own performance (voice or text); answers
+>   optional follow-up questions; views own player reports. A player only ever
+>   sees their own data, and a coach never sees a player's reflections.
 > - **Coach-developer Mode** — create `coach_observation` events to observe and
 >   support coaches; record `coach_developer` reflections; their insights track
 >   coach development over time.
